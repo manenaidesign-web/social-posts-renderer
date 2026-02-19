@@ -6,9 +6,11 @@
     "start": "node server.js",
     "dev": "nodemon server.js"
   },
-"dependencies": {
-  "puppeteer": "^21.0.0",
-  "@sparticuz/chromium": "^119.0.0",
-  
-}
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.709.0",
+    "@sparticuz/chromium": "^119.0.0",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "puppeteer": "^21.0.0"
+  }
 }
