@@ -21,8 +21,7 @@ export const uploadToS3 = async (imageBase64, filename) => {
       Bucket: process.env.S3_BUCKET,
       Key: `designs/${filename}`,
       Body: buffer,
-      ContentType: 'image/png',
-      ACL: 'public-read'
+      ContentType: 'image/png'
     })
     
     await s3Client.send(command)
