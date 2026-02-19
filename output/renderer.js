@@ -11,8 +11,17 @@ export const renderToPNG = async (html, css) => {
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
-        '--font-render-hinting=none'
-      ]
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process',
+        '--disable-gpu'
+      ],
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || 
+                      process.env.CHROME_BIN ||
+                      '/usr/bin/chromium-browser' ||
+                      undefined
     })
     
     const page = await browser.newPage()
@@ -25,7 +34,7 @@ export const renderToPNG = async (html, css) => {
     
     const fullHTML = `
       <!DOCTYPE html>
-      <html lang="he" dir="rtl">
+      <html lang="en" dir="ltr">
         <head>
           <meta charset="UTF-8">
           <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -50,7 +59,6 @@ export const renderToPNG = async (html, css) => {
       timeout: 10000
     })
     
-    // Wait for fonts to load
     await page.evaluateHandle('document.fonts.ready')
     
     const screenshot = await page.screenshot({
@@ -70,3 +78,6 @@ export const renderToPNG = async (html, css) => {
     throw error
   }
 }
+```
+
+---
