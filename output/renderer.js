@@ -17,11 +17,7 @@ export const renderToPNG = async (html, css) => {
         '--no-zygote',
         '--single-process',
         '--disable-gpu'
-      ],
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || 
-                      process.env.CHROME_BIN ||
-                      '/usr/bin/chromium-browser' ||
-                      undefined
+      ]
     })
     
     const page = await browser.newPage()
@@ -78,6 +74,3 @@ export const renderToPNG = async (html, css) => {
     throw error
   }
 }
-```
-
----
