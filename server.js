@@ -122,12 +122,26 @@ app.get('/test', async (req, res) => {
     
     const imageBase64 = await renderToPNG(html, css)
     const filename = `test_${Date.now()}.png`
+    
+    // Upload to S3
+    let imageUrl = null
+    if (process.env.S3_BUCKET && process.env.AWS_ACCESS_KEY_ID) {
+      try {
+        imageUrl = await uploadToS3(imageBase64, filename)
+        console.log('✅ Uploaded to S3:', imageUrl)
+      } catch (error) {
+        console.log('⚠️  S3 upload failed:', error.message)
+      }
+    }
+    
+    // Also save locally
     fs.writeFileSync(`./output/${filename}`, imageBase64, 'base64')
     
     res.json({
       success: true,
       message: 'Test image created!',
-      filename
+      filename,
+      imageUrl: imageUrl || `file://./output/${filename}`
     })
   } catch (error) {
     res.status(500).json({ error: error.message })
