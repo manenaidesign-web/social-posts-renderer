@@ -1,30 +1,22 @@
 // output/renderer.js
 
-import puppeteer from 'puppeteer'
+import { chromium } from 'playwright'
 
 export const renderToPNG = async (html, css) => {
   let browser
   
   try {
-    browser = await puppeteer.launch({
-      headless: 'new',
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu',
-        '--disable-software-rasterizer',
-        '--disable-extensions'
-      ]
+    browser = await chromium.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
     })
     
-    const page = await browser.newPage()
-    
-    await page.setViewport({
-      width: 1080,
-      height: 1080,
+    const context = await browser.newContext({
+      viewport: { width: 1080, height: 1080 },
       deviceScaleFactor: 2
     })
+    
+    const page = await context.newPage()
     
     const fullHTML = `
       <!DOCTYPE html>
@@ -46,20 +38,19 @@ export const renderToPNG = async (html, css) => {
     `
     
     await page.setContent(fullHTML, {
-      waitUntil: 'networkidle0',
+      waitUntil: 'networkidle',
       timeout: 10000
     })
     
-    await page.evaluateHandle('document.fonts.ready')
+    await page.waitForLoadState('networkidle')
     
     const screenshot = await page.screenshot({
-      type: 'png',
-      encoding: 'base64'
+      type: 'png'
     })
     
     await browser.close()
     
-    return screenshot
+    return screenshot.toString('base64')
     
   } catch (error) {
     if (browser) {
