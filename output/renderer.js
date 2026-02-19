@@ -7,16 +7,14 @@ export const renderToPNG = async (html, css) => {
   
   try {
     browser = await puppeteer.launch({
-      headless: true,
+      headless: 'new',
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process',
-        '--disable-gpu'
+        '--disable-gpu',
+        '--disable-software-rasterizer',
+        '--disable-extensions'
       ]
     })
     
@@ -30,17 +28,14 @@ export const renderToPNG = async (html, css) => {
     
     const fullHTML = `
       <!DOCTYPE html>
-      <html lang="en" dir="ltr">
+      <html>
         <head>
           <meta charset="UTF-8">
-          <link rel="preconnect" href="https://fonts.googleapis.com">
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-          <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&family=Assistant:wght@400;700&family=Rubik:wght@400;700&display=swap" rel="stylesheet">
+          <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&family=Assistant:wght@400;700&display=swap" rel="stylesheet">
           <style>
             ${css}
-            
             * {
-              font-family: 'Heebo', 'Assistant', 'Rubik', Arial, sans-serif !important;
+              font-family: 'Heebo', 'Assistant', Arial, sans-serif !important;
             }
           </style>
         </head>
@@ -59,8 +54,7 @@ export const renderToPNG = async (html, css) => {
     
     const screenshot = await page.screenshot({
       type: 'png',
-      encoding: 'base64',
-      fullPage: false
+      encoding: 'base64'
     })
     
     await browser.close()
