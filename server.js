@@ -147,7 +147,77 @@ app.get('/test', async (req, res) => {
     res.status(500).json({ error: error.message })
   }
 })
+app.post('/extract-colors', async (req, res) => {
+  const { websiteUrl, logoUrl } = req.body;
+  const browser = await chromium.launch();
+  
+  try {
+    const page = await browser.newPage();
+    await page.goto(websiteUrl, { waitUntil: 'networkidle', timeout: 30000 });
+    
+    const cssColors = await page.evaluate(() => {
+      const colors = {};
+      const selectors = ['header', 'nav', 'button', 'a', 'h1', 'h2', '.btn'];
+      selectors.forEach(sel => {
+        document.querySelectorAll(sel).forEach(el => {
+          const style = getComputedStyle(el);
+          ['backgroundColor', 'color'].forEach(prop => {
+            const c = style[prop];
+            if (c && !c.includes('rgba(0') && c !== 'transparent') {
+              colors[c] = (colors[c] || 0) + 1;
+            }
+          });
+        });
+      });
+      return colors;
+    });
 
+    const logoColors = {};
+    if (logoUrl) {
+      const logoPage = await browser.newPage();
+      await logoPage.goto(logoUrl, { timeout: 15000 });
+      const lc = await logoPage.evaluate(() => {
+        const img = document.querySelector('img');
+        if (!img) return {};
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || 100;
+        canvas.height = img.naturalHeight || 100;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const colors = {};
+        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        for (let i = 0; i < data.length; i += 16) {
+          const r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
+          if (a < 128) continue;
+          const hex = '#' + [r,g,b].map(x => x.toString(16).padStart(2,'0')).join('');
+          colors[hex] = (colors[hex] || 0) + 1;
+        }
+        return colors;
+      });
+      Object.entries(lc).forEach(([c, w]) => {
+        logoColors[c] = w * 3;
+      });
+      await logoPage.close();
+    }
+
+    const all = { ...cssColors };
+    Object.entries(logoColors).forEach(([c, w]) => {
+      all[c] = (all[c] || 0) + w;
+    });
+
+    const top10 = Object.entries(all)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([color]) => color);
+
+    await browser.close();
+    res.json({ success: true, colors: top10 });
+
+  } catch (error) {
+    await browser.close();
+    res.json({ success: false, error: error.message, colors: [] });
+  }
+});
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`)
   console.log(`📝 Ready to render templates!`)
