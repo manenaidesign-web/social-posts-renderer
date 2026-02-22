@@ -6,6 +6,7 @@ import { renderToPNG } from './output/renderer.js'
 import { uploadToS3 } from './utils/upload.js'
 import dotenv from 'dotenv'
 import fs from 'fs'
+import { chromium } from 'playwright'
 
 dotenv.config()
 
