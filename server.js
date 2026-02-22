@@ -82,115 +82,61 @@ app.get('/test', async (req, res) => {
   }
 })
 
+// Extract header background color only
 app.post('/extract-colors', async (req, res) => {
-  const { websiteUrl, logoUrl } = req.body;
+  const { websiteUrl } = req.body;
   const browser = await chromium.launch();
 
   const rgbToHex = (rgb) => {
-    const match = rgb.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-    if (!match) return rgb;
-    return '#' + [match[1], match[2], match[3]].map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
-  };
-
-  const hexToRgb = (hex) => {
-    if (!hex.startsWith('#') || hex.length < 7) return null;
-    return [parseInt(hex.slice(1,3), 16), parseInt(hex.slice(3,5), 16), parseInt(hex.slice(5,7), 16)];
-  };
-
-  const isSimilar = (hex1, hex2) => {
-    const rgb1 = hexToRgb(hex1);
-    const rgb2 = hexToRgb(hex2);
-    if (!rgb1 || !rgb2) return false;
-    return Math.abs(rgb1[0]-rgb2[0]) < 20 && Math.abs(rgb1[1]-rgb2[1]) < 20 && Math.abs(rgb1[2]-rgb2[2]) < 20;
-  };
-
-  const isNeutral = (hex) => {
-    const rgb = hexToRgb(hex);
-    if (!rgb) return true;
-    const max = Math.max(...rgb);
-    const min = Math.min(...rgb);
-    return (max - min) < 20;
+    const match = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if (!match) return null;
+    return '#' + [match[1], match[2], match[3]]
+      .map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
   };
 
   try {
     const page = await browser.newPage();
     await page.goto(websiteUrl, { waitUntil: 'networkidle', timeout: 30000 });
 
-    const cssColors = await page.evaluate(() => {
-      const colors = {};
+    const headerColor = await page.evaluate(() => {
+      // נסה למצוא header לפי סדר עדיפויות
       const selectors = [
-        'header', 'nav', 'button', 'a', 'h1', 'h2', '.btn',
-        'div', 'section', 'span', 'p', 'footer', 'main'
+        'header',
+        '#header',
+        '.header',
+        '[class*="header"]',
+        'nav',
+        '#nav',
+        '.nav',
+        '[class*="navbar"]',
+        '[class*="nav-bar"]',
+        '[class*="top-bar"]'
       ];
-      selectors.forEach(sel => {
-        document.querySelectorAll(sel).forEach(el => {
-          const style = getComputedStyle(el);
-          ['backgroundColor', 'color', 'borderColor', 'borderTopColor'].forEach(prop => {
-            const c = style[prop];
-            if (c && !c.includes('rgba(0') && c !== 'transparent') {
-              colors[c] = (colors[c] || 0) + 1;
-            }
-          });
-        });
-      });
-      return colors;
-    });
 
-    await page.close();
-
-    const logoColors = {};
-    if (logoUrl) {
-      const logoPage = await browser.newPage();
-      try {
-        await logoPage.goto(logoUrl, { timeout: 15000 });
-        const lc = await logoPage.evaluate(() => {
-          const img = document.querySelector('img');
-          if (!img) return {};
-          const canvas = document.createElement('canvas');
-          canvas.width = img.naturalWidth || 100;
-          canvas.height = img.naturalHeight || 100;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0);
-          const colors = {};
-          const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-          for (let i = 0; i < data.length; i += 16) {
-            const r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
-            if (a < 128) continue;
-            const hex = '#' + [r,g,b].map(x => x.toString(16).padStart(2,'0')).join('');
-            colors[hex] = (colors[hex] || 0) + 1;
+      for (const sel of selectors) {
+        const el = document.querySelector(sel);
+        if (el) {
+          const bg = getComputedStyle(el).backgroundColor;
+          if (bg && bg !== 'transparent' && !bg.includes('rgba(0, 0, 0, 0)')) {
+            return bg;
           }
-          return colors;
-        });
-        Object.entries(lc).forEach(([c, w]) => { logoColors[c] = w * 3; });
-      } catch (e) {
-        console.log('Logo fetch failed:', e.message);
+        }
       }
-      await logoPage.close();
-    }
-
-    const all = { ...cssColors };
-    Object.entries(logoColors).forEach(([c, w]) => { all[c] = (all[c] || 0) + w; });
-
-    const sorted = Object.entries(all)
-      .sort((a, b) => b[1] - a[1])
-      .map(([color]) => rgbToHex(color))
-      .filter(color => color.startsWith('#') && color.length === 7);
-
-    const unique = [];
-    sorted.forEach(color => {
-      if (!unique.some(u => isSimilar(u, color))) unique.push(color);
+      return null;
     });
-
-    const brandColors = unique.filter(c => !isNeutral(c)).slice(0, 3);
-    const neutrals = unique.filter(c => isNeutral(c)).slice(0, 1);
-    const final = [...brandColors, ...neutrals].slice(0, 4);
 
     await browser.close();
-    res.json({ success: true, colors: final });
+
+    if (!headerColor) {
+      return res.json({ success: false, error: 'Header color not found', headerColor: '#ffffff' });
+    }
+
+    const hex = rgbToHex(headerColor);
+    res.json({ success: true, headerColor: hex || headerColor });
 
   } catch (error) {
     await browser.close();
-    res.json({ success: false, error: error.message, colors: [] });
+    res.json({ success: false, error: error.message, headerColor: '#ffffff' });
   }
 });
 
