@@ -94,41 +94,66 @@ app.post('/extract-colors', async (req, res) => {
       .map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
   };
 
+  const isTransparent = (color) => {
+    if (!color) return true;
+    if (color === 'transparent') return true;
+    if (color.includes('rgba(0, 0, 0, 0)')) return true;
+    if (color.includes('rgba(0,0,0,0)')) return true;
+    return false;
+  };
+
   try {
     const page = await browser.newPage();
     await page.goto(websiteUrl, { waitUntil: 'networkidle', timeout: 30000 });
 
     const headerColor = await page.evaluate(() => {
-      const selectors = [
+      const headerSelectors = [
         'header',
         '#header',
+        '#masthead',
         '.header',
+        '.site-header',
+        '.main-header',
+        '.page-header',
+        '.top-header',
         '[class*="header"]',
         '[class*="site-header"]',
         '[class*="main-header"]',
-        '[class*="page-header"]',
-        '[class*="top-header"]',
+        '[class*="masthead"]',
+        '[role="banner"]',
         'nav',
         '#nav',
         '.nav',
         '[class*="navbar"]',
         '[class*="nav-bar"]',
         '[class*="top-bar"]',
-        '[class*="masthead"]',
-        '[role="banner"]',
-        'body > div:first-child',
-        'body > *:first-child'
       ];
 
-      for (const sel of selectors) {
+      const isTransparent = (color) => {
+        if (!color) return true;
+        if (color === 'transparent') return true;
+        if (color.includes('rgba(0, 0, 0, 0)')) return true;
+        if (color.includes('rgba(0,0,0,0)')) return true;
+        return false;
+      };
+
+      // נסה header selectors
+      for (const sel of headerSelectors) {
         const el = document.querySelector(sel);
         if (el) {
           const bg = getComputedStyle(el).backgroundColor;
-          if (bg && bg !== 'transparent' && !bg.includes('rgba(0, 0, 0, 0)')) {
-            return bg;
-          }
+          if (!isTransparent(bg)) return bg;
         }
       }
+
+      // אם header שקוף - קח צבע body
+      const bodyBg = getComputedStyle(document.body).backgroundColor;
+      if (!isTransparent(bodyBg)) return bodyBg;
+
+      // אם body שקוף - קח צבע html
+      const htmlBg = getComputedStyle(document.documentElement).backgroundColor;
+      if (!isTransparent(htmlBg)) return htmlBg;
+
       return null;
     });
 
