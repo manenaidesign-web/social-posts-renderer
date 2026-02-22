@@ -94,7 +94,7 @@ app.post('/header-color', async (req, res) => {
 
     // צלם רק 100px עליונים
     const screenshot = await page.screenshot({
-      clip: { x: 0, y: 0, width: 1280, height: 100 }
+      clip: { x: 0, y: 0, width: 1920, height: 100 }
     });
 
     await browser.close();
