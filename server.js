@@ -4,9 +4,9 @@ import express from 'express'
 import { TemplateRenderer } from './engine/TemplateRenderer.js'
 import { renderToPNG } from './output/renderer.js'
 import { uploadToS3 } from './utils/upload.js'
+import { chromium } from 'playwright'
 import dotenv from 'dotenv'
 import fs from 'fs'
-import { chromium } from 'playwright'
 
 dotenv.config()
 
@@ -45,14 +45,11 @@ app.post('/render', async (req, res) => {
     
     console.log(`Rendering template: ${templateId}`)
     
-    // 1. Load template and render HTML
     const renderer = new TemplateRenderer(templateId)
     const { html, css } = renderer.render(data)
     
-    // 2. Convert to PNG
     const imageBase64 = await renderToPNG(html, css)
     
-    // 3. Upload to S3
     const filename = `${templateId}_${Date.now()}.png`
     let imageUrl = null
 
@@ -65,10 +62,8 @@ app.post('/render', async (req, res) => {
       }
     }
 
-    // 4. Also save locally for backup
     fs.writeFileSync(`./output/${filename}`, imageBase64, 'base64')
 
-    // 5. Return result
     res.json({
       success: true,
       templateId,
@@ -106,7 +101,7 @@ app.get('/templates', (req, res) => {
   }
 })
 
-// Test endpoint for browser
+// Test endpoint
 app.get('/test', async (req, res) => {
   try {
     const renderer = new TemplateRenderer('t_bold_promo')
@@ -124,7 +119,6 @@ app.get('/test', async (req, res) => {
     const imageBase64 = await renderToPNG(html, css)
     const filename = `test_${Date.now()}.png`
     
-    // Upload to S3
     let imageUrl = null
     if (process.env.S3_BUCKET && process.env.AWS_ACCESS_KEY_ID) {
       try {
@@ -135,7 +129,6 @@ app.get('/test', async (req, res) => {
       }
     }
     
-    // Also save locally
     fs.writeFileSync(`./output/${filename}`, imageBase64, 'base64')
     
     res.json({
@@ -148,14 +141,25 @@ app.get('/test', async (req, res) => {
     res.status(500).json({ error: error.message })
   }
 })
+
+// Extract Colors endpoint
 app.post('/extract-colors', async (req, res) => {
   const { websiteUrl, logoUrl } = req.body;
   const browser = await chromium.launch();
-  
+
+  // המר RGB ל-HEX
+  const rgbToHex = (rgb) => {
+    const match = rgb.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+    if (!match) return rgb;
+    return '#' + [match[1], match[2], match[3]]
+      .map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
+  };
+
   try {
+    // שלב 1: צבעים מה-CSS
     const page = await browser.newPage();
     await page.goto(websiteUrl, { waitUntil: 'networkidle', timeout: 30000 });
-    
+
     const cssColors = await page.evaluate(() => {
       const colors = {};
       const selectors = ['header', 'nav', 'button', 'a', 'h1', 'h2', '.btn'];
@@ -173,52 +177,66 @@ app.post('/extract-colors', async (req, res) => {
       return colors;
     });
 
+    await page.close();
+
+    // שלב 2: צבעים מהלוגו (משקל x3)
     const logoColors = {};
     if (logoUrl) {
       const logoPage = await browser.newPage();
-      await logoPage.goto(logoUrl, { timeout: 15000 });
-      const lc = await logoPage.evaluate(() => {
-        const img = document.querySelector('img');
-        if (!img) return {};
-        const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth || 100;
-        canvas.height = img.naturalHeight || 100;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-        const colors = {};
-        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-        for (let i = 0; i < data.length; i += 16) {
-          const r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
-          if (a < 128) continue;
-          const hex = '#' + [r,g,b].map(x => x.toString(16).padStart(2,'0')).join('');
-          colors[hex] = (colors[hex] || 0) + 1;
-        }
-        return colors;
-      });
-      Object.entries(lc).forEach(([c, w]) => {
-        logoColors[c] = w * 3;
-      });
+      try {
+        await logoPage.goto(logoUrl, { timeout: 15000 });
+        const lc = await logoPage.evaluate(() => {
+          const img = document.querySelector('img');
+          if (!img) return {};
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth || 100;
+          canvas.height = img.naturalHeight || 100;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          const colors = {};
+          const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+          for (let i = 0; i < data.length; i += 16) {
+            const r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
+            if (a < 128) continue;
+            const hex = '#' + [r,g,b].map(x => x.toString(16).padStart(2,'0')).join('');
+            colors[hex] = (colors[hex] || 0) + 1;
+          }
+          return colors;
+        });
+        Object.entries(lc).forEach(([c, w]) => {
+          logoColors[c] = w * 3;
+        });
+      } catch (e) {
+        console.log('Logo fetch failed:', e.message);
+      }
       await logoPage.close();
     }
 
+    // שלב 3: מזג, המר ל-HEX, הסר כפולים
     const all = { ...cssColors };
     Object.entries(logoColors).forEach(([c, w]) => {
       all[c] = (all[c] || 0) + w;
     });
 
-    const top10 = Object.entries(all)
+    const top6 = Object.entries(all)
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 10)
+      .map(([color, weight]) => [rgbToHex(color), weight])
+      .filter(([color], idx, arr) =>
+        color.startsWith('#') &&
+        arr.findIndex(([c]) => c === color) === idx
+      )
+      .slice(0, 6)
       .map(([color]) => color);
 
     await browser.close();
-    res.json({ success: true, colors: top10 });
+    res.json({ success: true, colors: top6 });
 
   } catch (error) {
     await browser.close();
     res.json({ success: false, error: error.message, colors: [] });
   }
 });
+
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`)
   console.log(`📝 Ready to render templates!`)
