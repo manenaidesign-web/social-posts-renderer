@@ -82,7 +82,7 @@ app.get('/test', async (req, res) => {
   }
 })
 
-// Extract header background color only
+// Extract header background color
 app.post('/extract-colors', async (req, res) => {
   const { websiteUrl } = req.body;
   const browser = await chromium.launch();
@@ -99,18 +99,25 @@ app.post('/extract-colors', async (req, res) => {
     await page.goto(websiteUrl, { waitUntil: 'networkidle', timeout: 30000 });
 
     const headerColor = await page.evaluate(() => {
-      // נסה למצוא header לפי סדר עדיפויות
       const selectors = [
         'header',
         '#header',
         '.header',
         '[class*="header"]',
+        '[class*="site-header"]',
+        '[class*="main-header"]',
+        '[class*="page-header"]',
+        '[class*="top-header"]',
         'nav',
         '#nav',
         '.nav',
         '[class*="navbar"]',
         '[class*="nav-bar"]',
-        '[class*="top-bar"]'
+        '[class*="top-bar"]',
+        '[class*="masthead"]',
+        '[role="banner"]',
+        'body > div:first-child',
+        'body > *:first-child'
       ];
 
       for (const sel of selectors) {
@@ -132,7 +139,7 @@ app.post('/extract-colors', async (req, res) => {
     }
 
     const hex = rgbToHex(headerColor);
-    res.json({ success: true, headerColor: hex || headerColor });
+    res.json({ success: true, headerColor: hex || '#ffffff' });
 
   } catch (error) {
     await browser.close();
