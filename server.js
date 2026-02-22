@@ -90,7 +90,7 @@ app.post('/header-color', async (req, res) => {
   try {
     const page = await browser.newPage();
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto(websiteUrl, { waitUntil: 'networkidle', timeout: 30000 });
+    await page.goto(websiteUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
 
     // צלם רק 100px עליונים
     const screenshot = await page.screenshot({
