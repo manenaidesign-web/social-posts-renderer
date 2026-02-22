@@ -82,7 +82,36 @@ app.get('/test', async (req, res) => {
   }
 })
 
-// Extract header background color
+// Capture header screenshot and upload to S3
+app.post('/header-color', async (req, res) => {
+  const { websiteUrl } = req.body;
+  const browser = await chromium.launch();
+
+  try {
+    const page = await browser.newPage();
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto(websiteUrl, { waitUntil: 'networkidle', timeout: 30000 });
+
+    // צלם רק 100px עליונים
+    const screenshot = await page.screenshot({
+      clip: { x: 0, y: 0, width: 1280, height: 100 }
+    });
+
+    await browser.close();
+
+    // העלה ל-S3
+    const filename = `header_${Date.now()}.png`;
+    const imageUrl = await uploadToS3(screenshot.toString('base64'), filename);
+
+    res.json({ success: true, headerImageUrl: imageUrl });
+
+  } catch (error) {
+    await browser.close();
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// Extract header background color from CSS
 app.post('/extract-colors', async (req, res) => {
   const { websiteUrl } = req.body;
   const browser = await chromium.launch();
@@ -94,65 +123,39 @@ app.post('/extract-colors', async (req, res) => {
       .map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
   };
 
-  const isTransparent = (color) => {
-    if (!color) return true;
-    if (color === 'transparent') return true;
-    if (color.includes('rgba(0, 0, 0, 0)')) return true;
-    if (color.includes('rgba(0,0,0,0)')) return true;
-    return false;
-  };
-
   try {
     const page = await browser.newPage();
     await page.goto(websiteUrl, { waitUntil: 'networkidle', timeout: 30000 });
 
     const headerColor = await page.evaluate(() => {
-      const headerSelectors = [
-        'header',
-        '#header',
-        '#masthead',
-        '.header',
-        '.site-header',
-        '.main-header',
-        '.page-header',
-        '.top-header',
-        '[class*="header"]',
-        '[class*="site-header"]',
-        '[class*="main-header"]',
-        '[class*="masthead"]',
-        '[role="banner"]',
-        'nav',
-        '#nav',
-        '.nav',
-        '[class*="navbar"]',
-        '[class*="nav-bar"]',
-        '[class*="top-bar"]',
-      ];
-
-      const isTransparent = (color) => {
-        if (!color) return true;
-        if (color === 'transparent') return true;
-        if (color.includes('rgba(0, 0, 0, 0)')) return true;
-        if (color.includes('rgba(0,0,0,0)')) return true;
-        return false;
+      const isUsable = (color) => {
+        if (!color) return false;
+        if (color === 'transparent') return false;
+        if (color.includes('rgba(0, 0, 0, 0)')) return false;
+        if (color.includes('rgba(0,0,0,0)')) return false;
+        return true;
       };
 
-      // נסה header selectors
-      for (const sel of headerSelectors) {
+      const selectors = [
+        'header', '#header', '#masthead', '.header', '.site-header',
+        '.main-header', '.page-header', '.top-header',
+        '[class*="header"]', '[class*="site-header"]',
+        '[class*="masthead"]', '[role="banner"]',
+        'nav', '#nav', '.nav', '[class*="navbar"]',
+        '[class*="nav-bar"]', '[class*="top-bar"]',
+      ];
+
+      for (const sel of selectors) {
         const el = document.querySelector(sel);
         if (el) {
           const bg = getComputedStyle(el).backgroundColor;
-          if (!isTransparent(bg)) return bg;
+          if (isUsable(bg)) return bg;
         }
       }
 
-      // אם header שקוף - קח צבע body
+      // fallback: body
       const bodyBg = getComputedStyle(document.body).backgroundColor;
-      if (!isTransparent(bodyBg)) return bodyBg;
-
-      // אם body שקוף - קח צבע html
-      const htmlBg = getComputedStyle(document.documentElement).backgroundColor;
-      if (!isTransparent(htmlBg)) return htmlBg;
+      if (isUsable(bodyBg)) return bodyBg;
 
       return null;
     });
