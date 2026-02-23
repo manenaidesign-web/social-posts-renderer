@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1080px;
+    height: 1080px;
+    overflow: hidden;
+    position: relative;
+    background-color: {{primaryColor}};
+    font-family: '{{fontPrimary}}', 'Heebo', sans-serif;
+  }
+
+  /* ===== BACKGROUND ===== */
+  .bg {
+    position: absolute;
+    inset: 0;
+    background-color: {{primaryColor}};
+  }
+
+  /* ===== DECORATIVE SHAPES - bottom circle (large) ===== */
+  .circle-bottom {
+    position: absolute;
+    bottom: -60px;
+    left: -60px;
+    width: 620px;
+    height: 620px;
+    border-radius: 50%;
+    background-color: {{accentColor}};
+    opacity: 0.25;
+  }
+
+  /* ===== DECORATIVE SHAPES - top right circle ===== */
+  .circle-top-right {
+    position: absolute;
+    top: -80px;
+    right: -80px;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background-color: {{accentColor}};
+    opacity: 0.18;
+  }
+
+  /* ===== DECORATIVE SHAPES - small circles scattered ===== */
+  .dot {
+    position: absolute;
+    border-radius: 50%;
+    background-color: {{accentColor}};
+  }
+  .dot-1 { width: 80px; height: 80px; bottom: 260px; left: 30px; opacity: 0.9; }
+  .dot-2 { width: 55px; height: 55px; bottom: 160px; left: 160px; opacity: 0.7; }
+  .dot-3 { width: 40px; height: 40px; top: 200px; right: 60px; opacity: 0.6; }
+  .dot-4 { width: 25px; height: 25px; top: 80px; left: 300px; opacity: 0.5; }
+
+  /* ===== DECORATIVE SYMBOLS ===== */
+  .symbol {
+    position: absolute;
+    color: white;
+    font-size: 28px;
+    font-weight: 900;
+    opacity: 0.3;
+  }
+  .sym-1 { top: 120px; left: 80px; transform: rotate(45deg); }
+  .sym-2 { top: 300px; right: 120px; transform: rotate(-15deg); }
+  .sym-3 { bottom: 380px; right: 50px; }
+  .sym-4 { top: 160px; right: 280px; font-size: 18px; }
+
+  /* ===== HERO IMAGE CIRCLE ===== */
+  .hero-wrapper {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 580px;
+    height: 580px;
+  }
+
+  .hero-circle-bg {
+    position: absolute;
+    bottom: -40px;
+    left: -40px;
+    width: 560px;
+    height: 560px;
+    border-radius: 50%;
+    background-color: {{accentColor}};
+    opacity: 0.9;
+  }
+
+  .hero-img {
+    position: absolute;
+    bottom: 0;
+    left: 40px;
+    width: 520px;
+    height: 560px;
+    object-fit: cover;
+    object-position: top center;
+    clip-path: ellipse(50% 55% at 50% 55%);
+    z-index: 5;
+  }
+
+  /* ===== LOGO ===== */
+  .logo {
+    position: absolute;
+    top: 44px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+  }
+  .logo img {
+    height: 52px;
+    object-fit: contain;
+  }
+
+  /* ===== TEXT CONTENT ===== */
+  .content {
+    position: absolute;
+    top: 130px;
+    right: 60px;
+    width: 460px;
+    z-index: 10;
+    text-align: right;
+  }
+
+  .headline {
+    font-size: 110px;
+    font-weight: 900;
+    line-height: 0.95;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: -2px;
+    text-shadow: 4px 4px 0px rgba(0,0,0,0.15);
+  }
+
+  .subtitle-wrap {
+    display: inline-block;
+    background-color: #111111;
+    color: white;
+    padding: 10px 24px;
+    margin-top: 18px;
+    border-radius: 6px;
+  }
+
+  .subtitle {
+    font-size: 34px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: {{accentColor}};
+  }
+
+  .body-text {
+    margin-top: 22px;
+    font-size: 22px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.85);
+    font-weight: 400;
+    max-width: 400px;
+    margin-left: auto;
+  }
+
+  .website {
+    margin-top: 18px;
+    font-size: 22px;
+    font-weight: 600;
+    color: white;
+    opacity: 0.9;
+    text-decoration: none;
+  }
+
+</style>
+</head>
+<body>
+
+  <!-- Background -->
+  <div class="bg"></div>
+
+  <!-- Decorative circles -->
+  <div class="circle-bottom"></div>
+  <div class="circle-top-right"></div>
+
+  <!-- Dots -->
+  <div class="dot dot-1"></div>
+  <div class="dot dot-2"></div>
+  <div class="dot dot-3"></div>
+  <div class="dot dot-4"></div>
+
+  <!-- Symbols -->
+  <div class="symbol sym-1">✕</div>
+  <div class="symbol sym-2">✕</div>
+  <div class="symbol sym-3">○</div>
+  <div class="symbol sym-4">◦</div>
+
+  <!-- Hero image -->
+  <div class="hero-wrapper">
+    <div class="hero-circle-bg"></div>
+    <img class="hero-img" src="{{heroImage}}" alt="hero" />
+  </div>
+
+  <!-- Logo -->
+  <div class="logo">
+    <img src="{{logoUrl}}" alt="logo" />
+  </div>
+
+  <!-- Text Content -->
+  <div class="content">
+    <div class="headline">{{headline}}</div>
+    <div class="subtitle-wrap">
+      <div class="subtitle">{{subtitle}}</div>
+    </div>
+    <div class="body-text">{{bodyText}}</div>
+    <div class="website">{{website}}</div>
+  </div>
+
+</body>
+</html>
