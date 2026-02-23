@@ -118,20 +118,21 @@
   .content {
     position: absolute;
     top: 130px;
-    right: 60px;
-    width: 460px;
+    right: 50px;
+    left: 50px;
     z-index: 10;
     text-align: right;
   }
 
   .headline {
-    font-size: 110px;
+    font-size: 90px;
     font-weight: 900;
     line-height: 0.95;
     color: white;
     text-transform: uppercase;
     letter-spacing: -2px;
     text-shadow: 4px 4px 0px rgba(0,0,0,0.15);
+    word-break: break-word;
   }
 
   .subtitle-wrap {
@@ -208,7 +209,7 @@
   <div class="content">
     <div class="headline">{{headline}}</div>
     <div class="subtitle-wrap">
-      <div class="subtitle">{{subtitle}}</div>
+      <div class="subtitle">{{subtext}}</div>
     </div>
     <div class="body-text">{{bodyText}}</div>
     <div class="website">{{website}}</div>
