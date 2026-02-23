@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 3000
 app.use(express.json())
 
 app.get('/', (req, res) => {
-  res.json({ status: 'ok', message: 'Social Posts Renderer is running!', version: '1.0.0' })
+  res.json({ status: 'ok', message: 'Social Posts Renderer is running!', version: '1.1.0' })
 })
 
 app.post('/render', async (req, res) => {
@@ -24,11 +24,40 @@ app.post('/render', async (req, res) => {
     const { templateId, data } = req.body
     if (!templateId) return res.status(400).json({ success: false, error: 'templateId is required' })
     if (!data) return res.status(400).json({ success: false, error: 'data is required' })
+
     console.log(`Rendering template: ${templateId}`)
-    const renderer = new TemplateRenderer(templateId)
-    const { html, css } = renderer.render(data)
+
+    let html, css
+
+    const htmlPath = `./configs/${templateId}.html`
+    const jsonPath = `./configs/${templateId}.json`
+
+    if (fs.existsSync(htmlPath)) {
+      // ✅ HTML template - החלף variables ישירות
+      console.log(`Using HTML template: ${htmlPath}`)
+      let htmlContent = fs.readFileSync(htmlPath, 'utf-8')
+
+      Object.keys(data).forEach(key => {
+        const regex = new RegExp(`{{${key}}}`, 'g')
+        htmlContent = htmlContent.replace(regex, data[key] || '')
+      })
+
+      html = htmlContent
+      css = ''
+    } else if (fs.existsSync(jsonPath)) {
+      // ✅ JSON template - כמו עכשיו
+      console.log(`Using JSON template: ${jsonPath}`)
+      const renderer = new TemplateRenderer(templateId)
+      const result = renderer.render(data)
+      html = result.html
+      css = result.css
+    } else {
+      return res.status(404).json({ success: false, error: `Template '${templateId}' not found` })
+    }
+
     const imageBase64 = await renderToPNG(html, css)
     const filename = `${templateId}_${Date.now()}.png`
+
     let imageUrl = null
     if (process.env.S3_BUCKET && process.env.AWS_ACCESS_KEY_ID) {
       try {
@@ -38,8 +67,16 @@ app.post('/render', async (req, res) => {
         console.log('⚠️  S3 upload failed, saving locally:', error.message)
       }
     }
+
     fs.writeFileSync(`./output/${filename}`, imageBase64, 'base64')
-    res.json({ success: true, templateId, imageUrl: imageUrl || `file://./output/${filename}`, localPath: `./output/${filename}`, message: 'Rendered successfully' })
+    res.json({
+      success: true,
+      templateId,
+      imageUrl: imageUrl || `file://./output/${filename}`,
+      localPath: `./output/${filename}`,
+      message: 'Rendered successfully'
+    })
+
   } catch (error) {
     console.error('Render error:', error)
     res.status(500).json({ success: false, error: error.message })
@@ -49,7 +86,12 @@ app.post('/render', async (req, res) => {
 app.get('/templates', (req, res) => {
   try {
     const files = fs.readdirSync('./configs')
-    const templates = files.filter(f => f.endsWith('.json')).map(f => f.replace('.json', ''))
+    const templates = files
+      .filter(f => f.endsWith('.json') || f.endsWith('.html'))
+      .map(f => ({
+        templateId: f.replace('.json', '').replace('.html', ''),
+        type: f.endsWith('.html') ? 'html' : 'json'
+      }))
     res.json({ success: true, templates })
   } catch (error) {
     res.status(500).json({ success: false, error: error.message })
@@ -92,14 +134,12 @@ app.post('/header-color', async (req, res) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto(websiteUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
 
-    // צלם רק 100px עליונים
     const screenshot = await page.screenshot({
       clip: { x: 0, y: 0, width: 1920, height: 100 }
     });
 
     await browser.close();
 
-    // העלה ל-S3
     const filename = `header_${Date.now()}.png`;
     const imageUrl = await uploadToS3(screenshot.toString('base64'), filename);
 
@@ -153,7 +193,6 @@ app.post('/extract-colors', async (req, res) => {
         }
       }
 
-      // fallback: body
       const bodyBg = getComputedStyle(document.body).backgroundColor;
       if (isUsable(bodyBg)) return bodyBg;
 
