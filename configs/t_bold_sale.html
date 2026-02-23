@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Yellowtail&family=Quicksand:wght@500&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -10,209 +11,250 @@
     height: 1080px;
     overflow: hidden;
     position: relative;
-    background-color: {{primaryColor}};
-    font-family: '{{fontPrimary}}', 'Heebo', sans-serif;
+    background-color: {{bgColor}};
+    font-family: 'Inter', sans-serif;
   }
 
-  /* ===== BACKGROUND ===== */
-  .bg {
+  /* ===== DASHED BORDER ===== */
+  .border-frame {
     position: absolute;
-    inset: 0;
-    background-color: {{primaryColor}};
+    top: 59px;
+    left: 59px;
+    width: 962px;
+    height: 962px;
+    border-radius: 20px;
+    border: 6px dashed {{primaryColor}};
+    opacity: 0.6;
+    z-index: 1;
   }
 
-  /* ===== DECORATIVE SHAPES - bottom circle (large) ===== */
-  .circle-bottom {
+  /* ===== WHITE CORNER (top right) ===== */
+  .corner-white {
     position: absolute;
-    bottom: -60px;
-    left: -60px;
-    width: 620px;
-    height: 620px;
-    border-radius: 50%;
-    background-color: {{secondaryColor}};
-    opacity: 0.25;
+    top: 0;
+    right: 0;
+    width: 153px;
+    height: 153px;
+    background: white;
+    border-radius: 0 0 0 20px;
+    z-index: 2;
   }
 
-  /* ===== DECORATIVE SHAPES - top right circle ===== */
-  .circle-top-right {
+  /* ===== ASSET LEFT (מחט וחוט) ===== */
+  .asset-left {
     position: absolute;
-    top: -80px;
-    right: -80px;
-    width: 300px;
-    height: 300px;
-    border-radius: 50%;
-    background-color: {{secondaryColor}};
-    opacity: 0.3;
+    top: 582px;
+    left: 33px;
+    width: 194px;
+    height: 463px;
+    z-index: 3;
   }
-
-  /* ===== DECORATIVE SHAPES - small circles scattered ===== */
-  .dot {
-    position: absolute;
-    border-radius: 50%;
-    background-color: {{secondaryColor}};
-  }
-  .dot-1 { width: 80px; height: 80px; bottom: 260px; left: 30px; opacity: 0.9; }
-  .dot-2 { width: 55px; height: 55px; bottom: 160px; left: 160px; opacity: 0.7; }
-  .dot-3 { width: 40px; height: 40px; top: 200px; right: 60px; opacity: 0.6; }
-  .dot-4 { width: 25px; height: 25px; top: 80px; left: 300px; opacity: 0.5; }
-
-  /* ===== DECORATIVE SYMBOLS ===== */
-  .symbol {
-    position: absolute;
-    color: white;
-    font-size: 28px;
-    font-weight: 900;
-    opacity: 0.3;
-  }
-  .sym-1 { top: 120px; left: 80px; transform: rotate(45deg); }
-  .sym-2 { top: 300px; right: 120px; transform: rotate(-15deg); }
-  .sym-3 { bottom: 380px; right: 50px; }
-  .sym-4 { top: 160px; right: 280px; font-size: 18px; }
-
-  /* ===== HERO IMAGE CIRCLE ===== */
-  .hero-wrapper {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 580px;
-    height: 580px;
-  }
-
-  .hero-circle-bg {
-    position: absolute;
-    bottom: -40px;
-    left: -40px;
-    width: 560px;
-    height: 560px;
-    border-radius: 50%;
-    background-color: {{secondaryColor}};
-    opacity: 0.9;
-  }
-
-  .hero-img {
-    position: absolute;
-    bottom: 0;
-    left: 40px;
-    width: 520px;
-    height: 560px;
-    object-fit: cover;
-    object-position: top center;
-    clip-path: ellipse(50% 55% at 50% 55%);
-    z-index: 5;
-  }
-
-  /* ===== LOGO ===== */
-  .logo {
-    position: absolute;
-    top: 44px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-  }
-  .logo img {
-    height: 52px;
+  .asset-left img {
+    width: 100%;
+    height: 100%;
     object-fit: contain;
   }
 
-  /* ===== TEXT CONTENT ===== */
-  .content {
+  /* ===== ASSET RIGHT (יד) ===== */
+  .asset-right {
     position: absolute;
-    top: 130px;
-    right: 50px;
-    left: 50px;
+    top: 618px;
+    right: 0;
+    width: 421px;
+    height: 462px;
+    z-index: 3;
+  }
+  .asset-right img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* ===== HEADER / TITLES ===== */
+  .header {
+    position: absolute;
+    top: 101px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
     z-index: 10;
-    text-align: right;
+    white-space: nowrap;
   }
 
-  .headline {
-    font-size: 90px;
+  .headline1 {
+    font-family: 'Yellowtail', cursive;
+    font-size: 80px;
+    color: {{primaryColor}};
+    line-height: 1;
+    position: relative;
+    z-index: 1;
+  }
+
+  .headline2 {
+    font-family: 'Inter', sans-serif;
+    font-size: 128px;
     font-weight: 900;
-    line-height: 0.95;
-    color: white;
-    text-transform: uppercase;
-    letter-spacing: -2px;
-    text-shadow: 4px 4px 0px rgba(0,0,0,0.15);
-    word-break: break-word;
-  }
-
-  .subtitle-wrap {
-    display: inline-block;
-    background-color: #111111;
-    color: white;
-    padding: 10px 24px;
-    margin-top: 18px;
-    border-radius: 6px;
-  }
-
-  .subtitle {
-    font-size: 34px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1px;
     color: {{accentColor}};
+    line-height: 0.9;
+    margin-top: -32px;
+    letter-spacing: -2px;
+    text-transform: uppercase;
   }
 
-  .body-text {
-    margin-top: 22px;
-    font-size: 22px;
-    line-height: 1.5;
-    color: rgba(255,255,255,0.85);
-    font-weight: 400;
-    max-width: 400px;
-    margin-left: auto;
+  .subtitle-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .subtitle-line {
+    width: 50px;
+    height: 4px;
+    background-color: {{accentColor}};
+  }
+  .subtitle-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 38px;
+    font-weight: 700;
+    color: {{accentColor}};
+    text-transform: uppercase;
   }
 
-  .website {
-    margin-top: 18px;
-    font-size: 22px;
-    font-weight: 600;
+  .headline3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 128px;
+    font-weight: 900;
+    color: {{accentColor}};
+    line-height: 0.9;
+    letter-spacing: -2px;
+    text-transform: uppercase;
+  }
+
+  .cta-btn {
+    background-color: {{accentColor}};
     color: white;
-    opacity: 0.9;
-    text-decoration: none;
+    border-radius: 100px;
+    padding: 20px 50px;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 40px;
+    font-weight: 500;
+    letter-spacing: 4.4px;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  /* ===== EVENT DETAILS ===== */
+  .details {
+    position: absolute;
+    top: 720px;
+    left: 218px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    z-index: 10;
+  }
+
+  .detail-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .detail-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .detail-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 32px;
+    color: {{primaryColor}};
+    font-weight: 400;
+  }
+
+  .detail-text strong {
+    font-weight: 700;
+  }
+
+  /* ===== DATE PILL ===== */
+  .date-pill {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: {{primaryColor}};
+    border-radius: 337px;
+    padding: 27px 40px;
+    z-index: 10;
+    white-space: nowrap;
+  }
+
+  .date-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: {{bgColor}};
+    letter-spacing: -0.48px;
   }
 
 </style>
 </head>
 <body>
 
-  <!-- Background -->
-  <div class="bg"></div>
+  <!-- Dashed border frame -->
+  <div class="border-frame"></div>
 
-  <!-- Decorative circles -->
-  <div class="circle-bottom"></div>
-  <div class="circle-top-right"></div>
+  <!-- White corner -->
+  <div class="corner-white"></div>
 
-  <!-- Dots -->
-  <div class="dot dot-1"></div>
-  <div class="dot dot-2"></div>
-  <div class="dot dot-3"></div>
-  <div class="dot dot-4"></div>
-
-  <!-- Symbols -->
-  <div class="symbol sym-1">✕</div>
-  <div class="symbol sym-2">✕</div>
-  <div class="symbol sym-3">○</div>
-  <div class="symbol sym-4">◦</div>
-
-  <!-- Hero image -->
-  <div class="hero-wrapper">
-    <div class="hero-circle-bg"></div>
-    <img class="hero-img" src="{{heroImage}}" alt="hero" />
+  <!-- Asset Left -->
+  <div class="asset-left">
+    <img src="{{assetLeft}}" alt="" />
   </div>
 
-  <!-- Logo -->
-  <div class="logo">
-    <img src="{{logoUrl}}" alt="logo" />
+  <!-- Asset Right -->
+  <div class="asset-right">
+    <img src="{{assetRight}}" alt="" />
   </div>
 
-  <!-- Text Content -->
-  <div class="content">
-    <div class="headline">{{headline}}</div>
-    <div class="subtitle-wrap">
-      <div class="subtitle">{{subtext}}</div>
+  <!-- Header -->
+  <div class="header">
+    <div class="headline1">{{headline1}}</div>
+    <div class="headline2">{{headline2}}</div>
+    <div class="subtitle-row">
+      <div class="subtitle-line"></div>
+      <div class="subtitle-text">{{subtitle}}</div>
+      <div class="subtitle-line"></div>
     </div>
-    <div class="body-text">{{bodyText}}</div>
-    <div class="website">{{website}}</div>
+    <div class="headline3">{{headline3}}</div>
+    <div class="cta-btn">{{ctaText}}</div>
+  </div>
+
+  <!-- Event Details -->
+  <div class="details">
+    <div class="detail-row">
+      <div class="detail-icon">🕐</div>
+      <div class="detail-text">{{detail1}}</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-icon">📍</div>
+      <div class="detail-text">{{detail2}}</div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-icon">👥</div>
+      <div class="detail-text">{{detail3}}</div>
+    </div>
+  </div>
+
+  <!-- Date Pill -->
+  <div class="date-pill">
+    <div class="date-text">{{date}}</div>
   </div>
 
 </body>
