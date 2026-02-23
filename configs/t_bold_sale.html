@@ -11,66 +11,45 @@
     height: 1080px;
     overflow: hidden;
     position: relative;
-    background-color: {{bgColor}};
+    background-color: {{primaryColor}};
     font-family: 'Inter', sans-serif;
   }
 
-  /* ===== DASHED BORDER ===== */
   .border-frame {
     position: absolute;
-    top: 59px;
-    left: 59px;
-    width: 962px;
-    height: 962px;
+    top: 59px; left: 59px;
+    width: 962px; height: 962px;
     border-radius: 20px;
-    border: 6px dashed {{primaryColor}};
+    border: 6px dashed {{secondaryColor}};
     opacity: 0.6;
     z-index: 1;
   }
 
-  /* ===== WHITE CORNER (top right) ===== */
   .corner-white {
     position: absolute;
-    top: 0;
-    right: 0;
-    width: 153px;
-    height: 153px;
+    top: 0; right: 0;
+    width: 153px; height: 153px;
     background: white;
     border-radius: 0 0 0 20px;
     z-index: 2;
   }
 
-  /* ===== ASSET LEFT (מחט וחוט) ===== */
   .asset-left {
     position: absolute;
-    top: 582px;
-    left: 33px;
-    width: 194px;
-    height: 463px;
+    top: 582px; left: 33px;
+    width: 194px; height: 463px;
     z-index: 3;
   }
-  .asset-left img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
+  .asset-left img { width: 100%; height: 100%; object-fit: contain; }
 
-  /* ===== ASSET RIGHT (יד) ===== */
   .asset-right {
     position: absolute;
-    top: 618px;
-    right: 0;
-    width: 421px;
-    height: 462px;
+    top: 618px; right: 0;
+    width: 421px; height: 462px;
     z-index: 3;
   }
-  .asset-right img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+  .asset-right img { width: 100%; height: 100%; object-fit: cover; }
 
-  /* ===== HEADER / TITLES ===== */
   .header {
     position: absolute;
     top: 101px;
@@ -87,17 +66,15 @@
   .headline1 {
     font-family: 'Yellowtail', cursive;
     font-size: 80px;
-    color: {{primaryColor}};
+    color: {{accentColor}};
     line-height: 1;
-    position: relative;
-    z-index: 1;
   }
 
   .headline2 {
     font-family: 'Inter', sans-serif;
     font-size: 128px;
     font-weight: 900;
-    color: {{accentColor}};
+    color: {{secondaryColor}};
     line-height: 0.9;
     margin-top: -32px;
     letter-spacing: -2px;
@@ -109,16 +86,11 @@
     align-items: center;
     gap: 10px;
   }
-  .subtitle-line {
-    width: 50px;
-    height: 4px;
-    background-color: {{accentColor}};
-  }
+  .subtitle-line { width: 50px; height: 4px; background-color: {{secondaryColor}}; }
   .subtitle-text {
-    font-family: 'Inter', sans-serif;
     font-size: 38px;
     font-weight: 700;
-    color: {{accentColor}};
+    color: {{secondaryColor}};
     text-transform: uppercase;
   }
 
@@ -126,15 +98,15 @@
     font-family: 'Inter', sans-serif;
     font-size: 128px;
     font-weight: 900;
-    color: {{accentColor}};
+    color: {{secondaryColor}};
     line-height: 0.9;
     letter-spacing: -2px;
     text-transform: uppercase;
   }
 
   .cta-btn {
-    background-color: {{accentColor}};
-    color: white;
+    background-color: {{secondaryColor}};
+    color: {{primaryColor}};
     border-radius: 100px;
     padding: 20px 50px;
     font-family: 'Quicksand', sans-serif;
@@ -145,50 +117,26 @@
     margin-top: 8px;
   }
 
-  /* ===== EVENT DETAILS ===== */
   .details {
     position: absolute;
-    top: 720px;
-    left: 218px;
+    top: 720px; left: 218px;
     display: flex;
     flex-direction: column;
     gap: 20px;
     z-index: 10;
   }
 
-  .detail-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+  .detail-row { display: flex; align-items: center; gap: 12px; }
+  .detail-icon { width: 36px; height: 36px; font-size: 28px; display: flex; align-items: center; }
+  .detail-text { font-size: 32px; color: {{accentColor}}; font-weight: 400; }
+  .detail-text strong { font-weight: 700; }
 
-  .detail-icon {
-    width: 36px;
-    height: 36px;
-    font-size: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .detail-text {
-    font-family: 'Inter', sans-serif;
-    font-size: 32px;
-    color: {{primaryColor}};
-    font-weight: 400;
-  }
-
-  .detail-text strong {
-    font-weight: 700;
-  }
-
-  /* ===== DATE PILL ===== */
   .date-pill {
     position: absolute;
     bottom: 60px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: {{primaryColor}};
+    background-color: {{secondaryColor}};
     border-radius: 337px;
     padding: 27px 40px;
     z-index: 10;
@@ -196,34 +144,21 @@
   }
 
   .date-text {
-    font-family: 'Inter', sans-serif;
     font-size: 24px;
     font-weight: 600;
-    color: {{bgColor}};
+    color: {{primaryColor}};
     letter-spacing: -0.48px;
   }
-
 </style>
 </head>
 <body>
 
-  <!-- Dashed border frame -->
   <div class="border-frame"></div>
-
-  <!-- White corner -->
   <div class="corner-white"></div>
 
-  <!-- Asset Left -->
-  <div class="asset-left">
-    <img src="{{assetLeft}}" alt="" />
-  </div>
+  <div class="asset-left"><img src="{{assetLeft}}" alt="" /></div>
+  <div class="asset-right"><img src="{{assetRight}}" alt="" /></div>
 
-  <!-- Asset Right -->
-  <div class="asset-right">
-    <img src="{{assetRight}}" alt="" />
-  </div>
-
-  <!-- Header -->
   <div class="header">
     <div class="headline1">{{headline1}}</div>
     <div class="headline2">{{headline2}}</div>
@@ -236,7 +171,6 @@
     <div class="cta-btn">{{ctaText}}</div>
   </div>
 
-  <!-- Event Details -->
   <div class="details">
     <div class="detail-row">
       <div class="detail-icon">🕐</div>
@@ -252,7 +186,6 @@
     </div>
   </div>
 
-  <!-- Date Pill -->
   <div class="date-pill">
     <div class="date-text">{{date}}</div>
   </div>
