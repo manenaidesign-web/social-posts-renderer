@@ -30,6 +30,8 @@ export const renderToPNG = async (input, maybeCss) => {
     height = 1080
   } = options
   
+  console.log('[renderer] html length received:', html ? html.length : 0)
+  
   let context
   
   try {
@@ -70,12 +72,15 @@ export const renderToPNG = async (input, maybeCss) => {
       timeout: 10000
     })
     
+    console.log('[renderer] waiting for RENDER_READY...')
+    
     try {
       await page.waitForFunction('window.__RENDER_READY__ === true', {
         timeout: 12000
       })
     } catch (error) {
       console.warn('waitForFunction __RENDER_READY__ timed out or failed, continuing render:', error?.message || error)
+      await page.waitForTimeout(3000)
     }
     
     const screenshot = await page.screenshot({
