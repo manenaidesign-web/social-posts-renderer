@@ -48,7 +48,7 @@ app.post('/render', async (req, res) => {
       // ✅ JSON template - כמו עכשיו
       console.log(`Using JSON template: ${jsonPath}`)
       const renderer = new TemplateRenderer(templateId)
-      const result = renderer.render(data)
+      const result = await renderer.render(data)
       html = result.html
       css = result.css
     } else {
@@ -101,7 +101,7 @@ app.get('/templates', (req, res) => {
 app.get('/test', async (req, res) => {
   try {
     const renderer = new TemplateRenderer('t_bold_promo')
-    const { html, css } = renderer.render({
+    const { html, css } = await renderer.render({
       primaryColor: "#FF5733", secondaryColor: "#C70039", accentColor: "#FFC300",
       headline: "HUGE SALE!", subtext: "50% OFF EVERYTHING",
       fontPrimary: "Heebo", fontSecondary: "Assistant",

@@ -100,17 +100,47 @@ export class TemplateRenderer {
     const styleCssPath = webConfig.styleCss
     const fitJsPath = webConfig.fitJs
     const runtimeJsPath = webConfig.runtimeJs
+
+    console.log('[TemplateRenderer.renderV2] file paths', {
+      templateId: this.templateId,
+      templateHtmlPath,
+      styleCssPath,
+      fitJsPath,
+      runtimeJsPath
+    })
     
     const templateHtml = fs.readFileSync(templateHtmlPath, 'utf8')
     const styleCss = fs.readFileSync(styleCssPath, 'utf8')
     const fitJs = fs.readFileSync(fitJsPath, 'utf8')
     const runtimeJs = fs.readFileSync(runtimeJsPath, 'utf8')
+
+    console.log('[TemplateRenderer.renderV2] file lengths', {
+      templateHtml: templateHtml.length,
+      styleCss: styleCss.length,
+      fitJs: fitJs.length,
+      runtimeJs: runtimeJs.length
+    })
+
+    console.log('[TemplateRenderer.renderV2] payload summary', {
+      templateId: tpl.id,
+      tokens,
+      content,
+      decisions,
+      assetsPresent: {
+        heroImageUrl: !!assets.heroImageUrl,
+        logoImageUrl: !!assets.logoImageUrl,
+        decorDataUrl: !!assets.decorDataUrl
+      },
+      requestMeta
+    })
     
     let fullHTML = templateHtml
       .replace('/*__STYLE__*/', styleCss)
       .replace('/*__FIT__*/', fitJs)
       .replace('/*__RUNTIME__*/', runtimeJs)
       .replace('/*__PAYLOAD__*/ {}', `/*__PAYLOAD__*/ ${JSON.stringify(payload)}`)
+
+    console.log('[TemplateRenderer.renderV2] fullHTML length', fullHTML.length)
     
     return {
       html: fullHTML,
