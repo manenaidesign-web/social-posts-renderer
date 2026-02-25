@@ -1,0 +1,188 @@
+(async function () {
+  const payload = window.__PAYLOAD__ || {};
+  const template = payload.template || {};
+  const tokens = payload.tokens || {};
+  const content = payload.content || {};
+  const decisions = payload.decisions || {};
+  const assets = payload.assets || {};
+  const requestMeta = payload.requestMeta || {};
+
+  const body = document.body;
+
+  // 2. Set body data attributes from decisions
+  if (decisions.variant) body.dataset.variant = decisions.variant;
+  if (decisions.heroSide) body.dataset.heroSide = decisions.heroSide;
+  if (decisions.heroMode) body.dataset.heroMode = decisions.heroMode;
+  if (decisions.decorAnchor)
+    body.dataset.decorAnchor = decisions.decorAnchor;
+
+  // 3. Set CSS vars from tokens
+  const root = document.documentElement;
+  const setVar = (name, value) => {
+    if (value !== undefined && value !== null) {
+      root.style.setProperty(name, String(value));
+    }
+  };
+
+  setVar('--primary', tokens.primary || '#ff4b4b');
+  setVar('--secondary', tokens.secondary || '#050816');
+  setVar('--accent', tokens.accent || '#f97316');
+  setVar('--textOnPrimary', tokens.textOnPrimary || '#ffffff');
+  setVar('--textOnAccent', tokens.textOnAccent || '#111827');
+
+  // 4. Background CSS from decisions.backgroundId
+  const backgrounds = (template.decisionSpace && template.decisionSpace.backgrounds) || {};
+  const defaultBgId =
+    template.defaults && template.defaults.backgroundId
+      ? template.defaults.backgroundId
+      : Object.keys(backgrounds)[0];
+  const bgId = decisions.backgroundId || defaultBgId;
+  const bg = backgrounds[bgId] || backgrounds[defaultBgId];
+
+  if (bg && bg.css) {
+    setVar('--bgCss', bg.css);
+  } else {
+    setVar('--bgCss', '#000000');
+  }
+
+  // 5. Decor anchor CSS vars
+  const decorAnchors = (template.anchors && template.anchors.decor) || {};
+  const decorKey =
+    decisions.decorAnchor ||
+    (template.defaults && template.defaults.decorAnchor) ||
+    null;
+  const decor = (decorKey && decorAnchors[decorKey]) || null;
+  if (decor && typeof decor.x === 'number' && typeof decor.y === 'number') {
+    setVar('--decorX', `${decor.x}px`);
+    setVar('--decorY', `${decor.y}px`);
+  }
+
+  // 6. Logo (image or text)
+  const logoImg = document.getElementById('logoImg');
+  const logoText = document.querySelector('.logoText');
+
+  if (assets.logoImageUrl && logoImg) {
+    logoImg.src = assets.logoImageUrl;
+    logoImg.style.display = 'block';
+    if (logoText) {
+      logoText.textContent = content.brandName || content.logoText || '';
+    }
+  } else {
+    if (logoImg) logoImg.style.display = 'none';
+    if (logoText) {
+      logoText.textContent = content.brandName || content.logoText || '';
+    }
+  }
+
+  // 7. Text content
+  const setText = (selector, value) => {
+    const el = document.querySelector(selector);
+    if (el && value !== undefined && value !== null) {
+      el.textContent = value;
+    }
+  };
+
+  setText('#headline', content.headline || '');
+  setText('#subtext', content.subtext || '');
+  setText('.badge', content.badge || '');
+  setText('#cta', content.cta || '');
+  setText('#fineprint', content.fineprint || '');
+
+  // 8. Emphasis words highlighting
+  const escapeRegExp = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const headlineEl = document.getElementById('headline');
+  if (
+    headlineEl &&
+    Array.isArray(decisions.emphasisWords) &&
+    decisions.emphasisWords.length &&
+    content.headline
+  ) {
+    const uniqueWords = decisions.emphasisWords.filter(Boolean);
+    if (uniqueWords.length) {
+      const pattern = new RegExp(
+        '\\b(' +
+          uniqueWords.map(w => escapeRegExp(String(w))).join('|') +
+          ')\\b',
+        'gi'
+      );
+      headlineEl.innerHTML = String(content.headline).replace(
+        pattern,
+        '<span class="em">$1</span>'
+      );
+    }
+  }
+
+  // 9. Hero image
+  const heroImg = document.getElementById('heroImg');
+  if (heroImg && assets.heroImageUrl) {
+    heroImg.src = assets.heroImageUrl;
+    heroImg.style.display = 'block';
+
+    if (decisions.heroMode === 'wide_object') {
+      heroImg.style.objectFit = 'cover';
+      heroImg.style.objectPosition = 'center';
+    } else if (decisions.heroMode === 'vertical_object') {
+      heroImg.style.objectFit = 'contain';
+      heroImg.style.objectPosition = 'center bottom';
+    } else if (
+      decisions.heroMode === 'person_cutout' ||
+      decisions.heroMode === 'product_packshot'
+    ) {
+      heroImg.style.objectFit = 'contain';
+      heroImg.style.objectPosition = 'center';
+      if (decisions.removeBg) {
+        heroImg.style.backgroundColor = 'transparent';
+      }
+    } else {
+      heroImg.style.objectFit = 'cover';
+    }
+  } else if (heroImg) {
+    heroImg.style.display = 'none';
+  }
+
+  // 10. Decor image
+  const decorImg = document.getElementById('decorImg');
+  if (decorImg && assets.decorDataUrl) {
+    decorImg.src = assets.decorDataUrl;
+    decorImg.style.display = 'block';
+  } else if (decorImg) {
+    decorImg.style.display = 'none';
+  }
+
+  // 11. Wait for fonts + images
+  const waitForFonts = document.fonts ? document.fonts.ready : Promise.resolve();
+  const images = Array.from(document.images || []);
+  const imagePromises = images.map(img =>
+    img.decode ? img.decode().catch(() => {}) : Promise.resolve()
+  );
+
+  await Promise.all([waitForFonts, ...imagePromises]);
+
+  // 12. Fit text
+  if (window.fitHeadlineWithFallback && window.fitSubtext) {
+    const successHeadline = window.fitHeadlineWithFallback({
+      headlineEl,
+      tpl: template,
+      fallbackVariant: 'C'
+    });
+
+    const subtextEl = document.getElementById('subtext');
+    const successSubtext = window.fitSubtext({
+      subtextEl,
+      tpl: template
+    });
+
+    // optionally could be added to meta later
+    void successHeadline;
+    void successSubtext;
+  }
+
+  // 13. Meta & ready flag
+  window.__RENDER_META__ = {
+    templateId: template.id,
+    decisions,
+    requestMeta
+  };
+  window.__RENDER_READY__ = true;
+})();
+

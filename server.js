@@ -26,7 +26,7 @@ app.get('/', (req, res) => {
 // Render endpoint
 app.post('/render', async (req, res) => {
   try {
-    const { templateId, data } = req.body
+    const { templateId, data, decisions, requestMeta, heroImageUrl } = req.body
     
     if (!templateId) {
       return res.status(400).json({
@@ -46,10 +46,19 @@ app.post('/render', async (req, res) => {
     
     // 1. Load template and render HTML
     const renderer = new TemplateRenderer(templateId)
-    const { html, css } = renderer.render(data)
+    const renderResult = await renderer.render(data, {
+      decisions,
+      requestMeta,
+      heroImageUrl
+    })
+    
+    const { html, css, canvas, meta } = renderResult
     
     // 2. Convert to PNG
-    const imageBase64 = await renderToPNG(html, css)
+    const width = canvas?.width || 1080
+    const height = canvas?.height || 1080
+    const imageBase64 = await renderToPNG({ html, css, width, height })
+    const imageBuffer = Buffer.from(imageBase64, 'base64')
     
     // 3. Upload to S3
     const filename = `${templateId}_${Date.now()}.png`
@@ -57,7 +66,7 @@ app.post('/render', async (req, res) => {
 
     if (process.env.S3_BUCKET && process.env.AWS_ACCESS_KEY_ID) {
       try {
-        imageUrl = await uploadToS3(imageBase64, filename)
+        imageUrl = await uploadToS3(imageBuffer, filename)
         console.log('✅ Uploaded to S3:', imageUrl)
       } catch (error) {
         console.log('⚠️  S3 upload failed, saving locally:', error.message)
@@ -65,7 +74,7 @@ app.post('/render', async (req, res) => {
     }
 
     // 4. Also save locally for backup
-    fs.writeFileSync(`./output/${filename}`, imageBase64, 'base64')
+    fs.writeFileSync(`./output/${filename}`, imageBuffer)
 
     // 5. Return result
     res.json({
@@ -73,6 +82,7 @@ app.post('/render', async (req, res) => {
       templateId,
       imageUrl: imageUrl || `file://./output/${filename}`,
       localPath: `./output/${filename}`,
+      meta: meta || null,
       message: 'Rendered successfully'
     })
     
@@ -109,7 +119,7 @@ app.get('/templates', (req, res) => {
 app.get('/test', async (req, res) => {
   try {
     const renderer = new TemplateRenderer('t_bold_promo')
-    const { html, css } = renderer.render({
+    const { html, css, canvas } = await renderer.render({
       primaryColor: "#FF5733",
       secondaryColor: "#C70039",
       accentColor: "#FFC300",
@@ -120,14 +130,17 @@ app.get('/test', async (req, res) => {
       logoUrl: "https://via.placeholder.com/150"
     })
     
-    const imageBase64 = await renderToPNG(html, css)
+    const width = canvas?.width || 1080
+    const height = canvas?.height || 1080
+    const imageBase64 = await renderToPNG({ html, css, width, height })
+    const imageBuffer = Buffer.from(imageBase64, 'base64')
     const filename = `test_${Date.now()}.png`
     
     // Upload to S3
     let imageUrl = null
     if (process.env.S3_BUCKET && process.env.AWS_ACCESS_KEY_ID) {
       try {
-        imageUrl = await uploadToS3(imageBase64, filename)
+        imageUrl = await uploadToS3(imageBuffer, filename)
         console.log('✅ Uploaded to S3:', imageUrl)
       } catch (error) {
         console.log('⚠️  S3 upload failed:', error.message)
@@ -135,7 +148,7 @@ app.get('/test', async (req, res) => {
     }
     
     // Also save locally
-    fs.writeFileSync(`./output/${filename}`, imageBase64, 'base64')
+    fs.writeFileSync(`./output/${filename}`, imageBuffer)
     
     res.json({
       success: true,

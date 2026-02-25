@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "2.0",
+  "id": "t_viral_social",
+  "name": "Viral Social",
+  "category": "promo",
+  "canvas": { "width": 1080, "height": 1080, "safePadding": 64 },
+  "decisionSpace": {
+    "variants": ["A", "B", "C"],
+    "heroModes": ["wide_object", "vertical_object", "person_cutout", "product_packshot", "background_image"],
+    "heroSides": ["left", "right"],
+    "decorAnchors": ["none", "top-left", "top-right", "behind-hero", "bottom-left", "bottom-right"],
+    "backgrounds": {
+      "bg_01": { "type": "css", "css": "radial-gradient(1200px 900px at 70% 25%, rgba(255,255,255,0.11), rgba(0,0,0,0) 55%), linear-gradient(135deg, var(--primary), #000)" },
+      "bg_02": { "type": "css", "css": "radial-gradient(900px 700px at 15% 15%, rgba(255,255,255,0.10), rgba(0,0,0,0) 60%), linear-gradient(135deg, #06121f, var(--primary))" },
+      "bg_03": { "type": "css", "css": "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.65) 60%, rgba(0,0,0,0.85) 100%), linear-gradient(135deg, var(--primary), #000)" }
+    }
+  },
+  "constraints": {
+    "headline": { "maxLines": 2, "minFontPx": 56, "maxFontPx": 110 },
+    "subtext": { "maxLines": 2, "minFontPx": 22, "maxFontPx": 38 },
+    "cta": { "maxChars": 22 }
+  },
+  "anchors": {
+    "decor": {
+      "top-left": { "x": 64, "y": 160 },
+      "top-right": { "x": 916, "y": 170 },
+      "behind-hero": { "x": 820, "y": 650 },
+      "bottom-left": { "x": 110, "y": 930 },
+      "bottom-right": { "x": 930, "y": 930 }
+    }
+  },
+  "web": {
+    "templateHtml": "./web/t_viral_social/template.html",
+    "styleCss": "./web/t_viral_social/style.css",
+    "fitJs": "./web/t_viral_social/fit.js",
+    "runtimeJs": "./web/t_viral_social/runtime.js"
+  },
+  "defaults": {
+    "variant": "A",
+    "heroMode": "wide_object",
+    "heroSide": "left",
+    "backgroundId": "bg_01",
+    "decorAnchor": "top-right"
+  }
+}
+

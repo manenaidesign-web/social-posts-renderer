@@ -1,6 +1,7 @@
 // engine/TemplateRenderer.js
 
 import { ComponentLibrary } from '../components/ComponentLibrary.js'
+import { decideRules } from './DecisionEngine.js'
 import fs from 'fs'
 
 export class TemplateRenderer {
@@ -12,18 +13,118 @@ export class TemplateRenderer {
     }
     
     this.config = JSON.parse(fs.readFileSync(configPath, 'utf8'))
+    this.templateId = this.config.id || templateId
     this.components = new ComponentLibrary()
   }
   
-  render(data) {
-    const resolvedConfig = this.resolvePlaceholders(this.config, data)
-    const html = this.buildHTML(resolvedConfig)
-    const css = this.buildCSS(resolvedConfig)
+  async render(data, context = {}) {
+    if (this.config.schemaVersion === '2.0') {
+      return this.renderV2(data, context)
+    }
     
-    return { html, css }
+    const resolvedConfig = this.resolvePlaceholdersLegacy(this.config, data)
+    const html = this.buildHTMLLegacy(resolvedConfig)
+    const css = this.buildCSSLegacy(resolvedConfig)
+    
+    return {
+      html,
+      css,
+      canvas: this.config.canvas,
+      meta: {
+        schemaVersion: this.config.schemaVersion || '1.x',
+        templateId: this.templateId
+      }
+    }
   }
   
-  resolvePlaceholders(config, data) {
+  async renderV2(data = {}, context = {}) {
+    const tpl = this.config
+    const {
+      decisions: providedDecisions,
+      requestMeta = {},
+      heroImageUrl
+    } = context
+    
+    const tokens = data.tokens || {
+      primary: data.primaryColor || '#FF4B4B',
+      secondary: data.secondaryColor || '#111827',
+      accent: data.accentColor || '#F97316',
+      textOnPrimary: '#FFFFFF',
+      textOnAccent: '#111827'
+    }
+    
+    const content = {
+      headline: data.headline || data.content?.headline || '',
+      subtext: data.subtext || data.content?.subtext || '',
+      cta: data.cta || data.content?.cta || '',
+      fineprint: data.fineprint || data.content?.fineprint || '',
+      badge: data.badge || data.content?.badge || '',
+      logoText: data.logoText || data.content?.logoText || '',
+      brandName: data.brandName || data.content?.brandName || '',
+      language: data.language || data.content?.language || requestMeta.language || 'en'
+    }
+    
+    const signals = data.signals || {
+      aspectRatio: data.aspectRatio || 1,
+      hasAlpha: data.hasAlpha !== undefined ? data.hasAlpha : true
+    }
+    
+    const assets = {
+      heroImageUrl: heroImageUrl || data.heroImageUrl || data.assets?.heroImageUrl || null,
+      logoImageUrl: data.logoImageUrl || data.assets?.logoImageUrl || null,
+      decorDataUrl: data.decorDataUrl || data.assets?.decorDataUrl || null
+    }
+    
+    let decisions = providedDecisions
+    if (!decisions) {
+      decisions = decideRules({
+        template: tpl,
+        request: requestMeta,
+        copy: content,
+        signals,
+        variantHint: data.variantHint || requestMeta.variantHint || content.headline
+      })
+    }
+    
+    const payload = {
+      template: tpl,
+      tokens,
+      content,
+      decisions,
+      assets,
+      requestMeta
+    }
+    
+    const webConfig = tpl.web || {}
+    const templateHtmlPath = webConfig.templateHtml
+    const styleCssPath = webConfig.styleCss
+    const fitJsPath = webConfig.fitJs
+    const runtimeJsPath = webConfig.runtimeJs
+    
+    const templateHtml = fs.readFileSync(templateHtmlPath, 'utf8')
+    const styleCss = fs.readFileSync(styleCssPath, 'utf8')
+    const fitJs = fs.readFileSync(fitJsPath, 'utf8')
+    const runtimeJs = fs.readFileSync(runtimeJsPath, 'utf8')
+    
+    let fullHTML = templateHtml
+      .replace('/*__STYLE__*/', styleCss)
+      .replace('/*__FIT__*/', fitJs)
+      .replace('/*__RUNTIME__*/', runtimeJs)
+      .replace('/*__PAYLOAD__*/ {}', `/*__PAYLOAD__*/ ${JSON.stringify(payload)}`)
+    
+    return {
+      html: fullHTML,
+      css: '',
+      canvas: tpl.canvas,
+      meta: {
+        schemaVersion: tpl.schemaVersion || '2.0',
+        templateId: this.templateId,
+        decisions
+      }
+    }
+  }
+  
+  resolvePlaceholdersLegacy(config, data) {
     const resolved = JSON.parse(JSON.stringify(config))
     
     resolved.layers.forEach(layer => {
@@ -49,7 +150,7 @@ export class TemplateRenderer {
     return resolved
   }
   
-  buildHTML(config) {
+  buildHTMLLegacy(config) {
     let html = `
       <div class="canvas" style="
         width: ${config.canvas.width}px;
@@ -83,7 +184,7 @@ export class TemplateRenderer {
     return html
   }
   
-  buildCSS(config) {
+  buildCSSLegacy(config) {
     return `
       * {
         margin: 0;

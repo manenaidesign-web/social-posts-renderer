@@ -13,10 +13,8 @@ const s3Client = new S3Client({
   }
 })
 
-export const uploadToS3 = async (imageBase64, filename) => {
+export const uploadToS3 = async (buffer, filename) => {
   try {
-    const buffer = Buffer.from(imageBase64, 'base64')
-    
     const command = new PutObjectCommand({
       Bucket: process.env.S3_BUCKET,
       Key: `designs/${filename}`,

@@ -2,17 +2,41 @@
 
 import { chromium } from 'playwright'
 
-export const renderToPNG = async (html, css) => {
-  let browser
-  
-  try {
-    browser = await chromium.launch({
+let browserPromise = null
+
+const getBrowser = async () => {
+  if (!browserPromise) {
+    browserPromise = chromium.launch({
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox']
+    }).catch(error => {
+      browserPromise = null
+      throw error
     })
+  }
+  
+  return browserPromise
+}
+
+export const renderToPNG = async (input, maybeCss) => {
+  const options = typeof input === 'string'
+    ? { html: input, css: maybeCss }
+    : (input || {})
+  
+  const {
+    html,
+    css,
+    width = 1080,
+    height = 1080
+  } = options
+  
+  let context
+  
+  try {
+    const browser = await getBrowser()
     
-    const context = await browser.newContext({
-      viewport: { width: 1080, height: 1080 },
+    context = await browser.newContext({
+      viewport: { width, height },
       deviceScaleFactor: 2
     })
     
@@ -29,6 +53,10 @@ export const renderToPNG = async (html, css) => {
             * {
               font-family: 'Heebo', 'Assistant', Arial, sans-serif !important;
             }
+            * {
+              animation: none !important;
+              transition: none !important;
+            }
           </style>
         </head>
         <body>
@@ -38,23 +66,33 @@ export const renderToPNG = async (html, css) => {
     `
     
     await page.setContent(fullHTML, {
-      waitUntil: 'networkidle',
+      waitUntil: 'load',
       timeout: 10000
     })
     
-    await page.waitForLoadState('networkidle')
+    try {
+      await page.waitForFunction('window.__RENDER_READY__ === true', {
+        timeout: 12000
+      })
+    } catch (error) {
+      // Ignore timeout for legacy templates that don't set __RENDER_READY__
+    }
     
     const screenshot = await page.screenshot({
       type: 'png'
     })
     
-    await browser.close()
+    await context.close()
     
     return screenshot.toString('base64')
     
   } catch (error) {
-    if (browser) {
-      await browser.close()
+    if (context) {
+      try {
+        await context.close()
+      } catch (_) {
+        // ignore context close errors
+      }
     }
     throw error
   }

@@ -1,0 +1,231 @@
+:root {
+  --primary: #ff4b4b;
+  --secondary: #050816;
+  --accent: #f97316;
+  --textOnPrimary: #ffffff;
+  --textOnAccent: #111827;
+  --bgCss: #000000;
+  --decorX: 820px;
+  --decorY: 650px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 1080px;
+  height: 1080px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Heebo', 'Assistant',
+    sans-serif;
+  background: #000;
+  color: #ffffff;
+}
+
+.canvas {
+  position: relative;
+  width: 1080px;
+  height: 1080px;
+  overflow: hidden;
+  background: var(--bgCss);
+}
+
+.bg {
+  position: absolute;
+  inset: 0;
+  background: var(--bgCss);
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+      circle at 15% 15%,
+      rgba(255, 255, 255, 0.08),
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 85% 85%,
+      rgba(0, 0, 0, 0.65),
+      transparent 70%
+    );
+  mix-blend-mode: normal;
+}
+
+.topbar {
+  position: absolute;
+  top: 48px;
+  left: 64px;
+  right: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10;
+}
+
+.logoSlot {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.logoSlot img {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  object-fit: contain;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.logoText {
+  font-weight: 700;
+  font-size: 28px;
+  letter-spacing: 0.03em;
+}
+
+.badge {
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.textBlock {
+  position: absolute;
+  left: 96px;
+  right: 96px;
+  bottom: 260px;
+  text-align: center;
+  z-index: 20;
+}
+
+#headline {
+  font-weight: 900;
+  font-size: 96px;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+#headline .em {
+  color: var(--accent);
+  text-shadow: 0 0 26px rgba(0, 0, 0, 0.6);
+}
+
+#subtext {
+  margin-top: 20px;
+  font-size: 32px;
+  line-height: 1.25;
+  opacity: 0.92;
+}
+
+.heroSlot {
+  position: absolute;
+  bottom: 40px;
+  left: 60px;
+  width: 420px;
+  height: 520px;
+  border-radius: 40px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 15;
+}
+
+.heroSlot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.decorSlot {
+  position: absolute;
+  left: var(--decorX);
+  top: var(--decorY);
+  transform: translate(-50%, -50%);
+  width: 260px;
+  height: 260px;
+  border-radius: 999px;
+  overflow: hidden;
+  z-index: 5;
+  opacity: 0.9;
+}
+
+.decorSlot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.footer {
+  position: absolute;
+  left: 96px;
+  right: 96px;
+  bottom: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 20;
+}
+
+.cta {
+  padding: 18px 40px;
+  border-radius: 999px;
+  border: none;
+  background: var(--accent);
+  color: var(--textOnAccent);
+  font-weight: 800;
+  font-size: 26px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: default;
+}
+
+.fineprint {
+  max-width: 420px;
+  font-size: 18px;
+  line-height: 1.3;
+  opacity: 0.8;
+  text-align: right;
+}
+
+/* Variant A: centered text, hero left bottom */
+body[data-variant='A'] .textBlock {
+  text-align: center;
+  left: 96px;
+  right: 96px;
+}
+
+body[data-variant='A'] .heroSlot {
+  left: 60px;
+  right: auto;
+}
+
+/* Variant B: text left, hero right */
+body[data-variant='B'] .textBlock {
+  text-align: left;
+  left: 96px;
+  right: 380px;
+}
+
+body[data-variant='B'] .heroSlot {
+  left: auto;
+  right: 60px;
+}
+
+/* Variant C: slightly smaller typography for long headlines */
+body[data-variant='C'] #headline {
+  font-size: 84px;
+}
+
+body[data-variant='C'] #subtext {
+  font-size: 30px;
+}
+
