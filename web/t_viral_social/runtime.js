@@ -1,4 +1,5 @@
-(async function () {
+;(async function () {
+  try {
   const payload = window.__PAYLOAD__ || {};
   const template = payload.template || {};
   const tokens = payload.tokens || {};
@@ -158,14 +159,30 @@
     decorImg.style.display = 'none';
   }
 
-  // 11. Wait for fonts + images
-  const waitForFonts = document.fonts ? document.fonts.ready : Promise.resolve();
-  const images = Array.from(document.images || []);
-  const imagePromises = images.map(img =>
-    img.decode ? img.decode().catch(() => {}) : Promise.resolve()
-  );
+  // 11. Wait for fonts + key images
+  const waits = []
+  const waitForFonts = document.fonts ? document.fonts.ready : Promise.resolve()
+  waits.push(waitForFonts)
 
-  await Promise.all([waitForFonts, ...imagePromises]);
+  if (logoImg && logoImg.src) {
+    if (logoImg.decode) {
+      waits.push(logoImg.decode().catch(() => {}))
+    }
+  }
+
+  if (heroImg && heroImg.src) {
+    if (heroImg.decode) {
+      waits.push(heroImg.decode().catch(() => {}))
+    }
+  }
+
+  if (decorImg && decorImg.src) {
+    if (decorImg.decode) {
+      waits.push(decorImg.decode().catch(() => {}))
+    }
+  }
+
+  await Promise.all(waits);
 
   // 12. Fit text
   if (window.fitHeadlineWithFallback && window.fitSubtext) {
@@ -192,6 +209,10 @@
     decisions,
     requestMeta
   };
-  window.__RENDER_READY__ = true;
+  } catch (error) {
+    console.error('[runtime] error in Viral Social runtime:', error);
+  } finally {
+    window.__RENDER_READY__ = true;
+  }
 })();
 
