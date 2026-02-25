@@ -108,6 +108,8 @@ export class TemplateRenderer {
       fitJsPath,
       runtimeJsPath
     })
+
+    console.log('[V2] paths:', { templateHtmlPath, styleCssPath, fitJsPath, runtimeJsPath })
     
     const templateHtml = fs.readFileSync(templateHtmlPath, 'utf8')
     const styleCss = fs.readFileSync(styleCssPath, 'utf8')
@@ -133,6 +135,11 @@ export class TemplateRenderer {
       },
       requestMeta
     })
+
+    console.log('[V2] css length:', styleCss.length)
+    console.log('[V2] fitJs length:', fitJs.length)
+    console.log('[V2] runtimeJs length:', runtimeJs.length)
+    console.log('[V2] template html length before replace:', templateHtml.length)
     
     let fullHTML = templateHtml
       .replace('/*__STYLE__*/', styleCss)
@@ -141,6 +148,7 @@ export class TemplateRenderer {
       .replace('/*__PAYLOAD__*/ {}', `/*__PAYLOAD__*/ ${JSON.stringify(payload)}`)
 
     console.log('[TemplateRenderer.renderV2] fullHTML length', fullHTML.length)
+    console.log('[V2] final html length:', fullHTML.length)
     
     return {
       html: fullHTML,
