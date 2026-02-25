@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family={{fontPrimary}}:wght@400;700;800&family={{fontSecondary}}:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1080px;
+    height: 1080px;
+    overflow: hidden;
+    position: relative;
+    background: linear-gradient(135deg, {{primaryColor}} 0%, {{primaryColor}} 55%, color-mix(in srgb, {{accentColor}} 35%, {{primaryColor}}) 100%);
+    font-family: '{{fontPrimary}}', sans-serif;
+  }
+
+  /* ===== ABSTRACT DECORATIONS ===== */
+
+  /* עיגול גדול - פינה שמאל עליון */
+  .deco-circle-tl {
+    position: absolute;
+    top: -140px;
+    left: -140px;
+    width: 420px;
+    height: 420px;
+    border-radius: 50%;
+    border: 50px solid {{accentColor}};
+    opacity: 0.2;
+  }
+
+  /* עיגול בינוני - פינה ימין עליון */
+  .deco-circle-tr {
+    position: absolute;
+    top: 40px;
+    right: -70px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: {{accentColor}};
+    opacity: 0.14;
+  }
+
+  /* עיגול קטן - אמצע שמאל */
+  .deco-circle-ml {
+    position: absolute;
+    top: 380px;
+    left: -40px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 3px solid {{accentColor}};
+    opacity: 0.22;
+  }
+
+  /* קו אלכסוני עבה */
+  .deco-line-1 {
+    position: absolute;
+    top: 200px;
+    left: -30px;
+    width: 340px;
+    height: 4px;
+    background: linear-gradient(90deg, {{accentColor}}, transparent);
+    opacity: 0.28;
+    transform: rotate(-25deg);
+  }
+
+  /* קו אלכסוני דק */
+  .deco-line-2 {
+    position: absolute;
+    top: 240px;
+    left: -30px;
+    width: 220px;
+    height: 2px;
+    background: linear-gradient(90deg, {{accentColor}}, transparent);
+    opacity: 0.16;
+    transform: rotate(-25deg);
+  }
+
+  /* נקודות מפוזרות */
+  .deco-dot {
+    position: absolute;
+    border-radius: 50%;
+    background: {{accentColor}};
+  }
+  .deco-dot-1 { width: 14px; height: 14px; top: 130px; left: 440px; opacity: 0.4; }
+  .deco-dot-2 { width: 9px;  height: 9px;  top: 175px; left: 485px; opacity: 0.28; }
+  .deco-dot-3 { width: 6px;  height: 6px;  top: 110px; left: 500px; opacity: 0.22; }
+  .deco-dot-4 { width: 16px; height: 16px; bottom: 300px; right: 90px; opacity: 0.22; }
+  .deco-dot-5 { width: 9px;  height: 9px;  bottom: 340px; right: 55px; opacity: 0.16; }
+  .deco-dot-6 { width: 6px;  height: 6px;  bottom: 260px; right: 120px; opacity: 0.14; }
+
+  /* מרובע מסובב */
+  .deco-square-1 {
+    position: absolute;
+    bottom: 120px;
+    left: 80px;
+    width: 55px;
+    height: 55px;
+    border: 3px solid {{accentColor}};
+    opacity: 0.25;
+    transform: rotate(45deg);
+  }
+
+  /* מרובע קטן */
+  .deco-square-2 {
+    position: absolute;
+    top: 280px;
+    left: 500px;
+    width: 28px;
+    height: 28px;
+    border: 2px solid {{accentColor}};
+    opacity: 0.2;
+    transform: rotate(30deg);
+  }
+
+  /* קשת תחתון שמאל */
+  .deco-arc-bl {
+    position: absolute;
+    bottom: -100px;
+    left: -100px;
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    border: 4px solid {{accentColor}};
+    opacity: 0.16;
+  }
+
+  /* קשת שניה */
+  .deco-arc-bl2 {
+    position: absolute;
+    bottom: -140px;
+    left: -140px;
+    width: 420px;
+    height: 420px;
+    border-radius: 50%;
+    border: 2px solid {{accentColor}};
+    opacity: 0.09;
+  }
+
+  /* פס אלכסוני דקורטיבי */
+  .deco-slash {
+    position: absolute;
+    top: 460px;
+    left: 30px;
+    width: 80px;
+    height: 3px;
+    background: {{accentColor}};
+    opacity: 0.3;
+    transform: rotate(-60deg);
+  }
+
+  /* ===== TEXT AREA ===== */
+  .text-area {
+    position: absolute;
+    top: 90px;
+    left: 80px;
+    width: 540px;
+    z-index: 10;
+  }
+
+  .headline {
+    font-size: 96px;
+    font-weight: 800;
+    line-height: 1.0;
+    color: {{secondaryColor}};
+    letter-spacing: -3px;
+    direction: rtl;
+    text-align: right;
+  }
+
+  .subtext {
+    margin-top: 28px;
+    font-size: 30px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: {{secondaryColor}};
+    opacity: 0.75;
+    max-width: 460px;
+    font-family: '{{fontSecondary}}', sans-serif;
+    direction: rtl;
+    text-align: right;
+  }
+
+  /* ===== HERO IMAGE CIRCLE ===== */
+  .hero-circle-wrap {
+    position: absolute;
+    bottom: 0;
+    right: -20px;
+    width: 720px;
+    height: 720px;
+    z-index: 5;
+  }
+
+  .hero-ring-outer {
+    position: absolute;
+    bottom: -40px;
+    right: -40px;
+    width: 720px;
+    height: 720px;
+    border-radius: 50%;
+    border: 3px solid {{accentColor}};
+    opacity: 0.3;
+    z-index: 1;
+  }
+
+  .hero-ring {
+    position: absolute;
+    bottom: -20px;
+    right: -10px;
+    width: 660px;
+    height: 660px;
+    border-radius: 50%;
+    background: {{accentColor}};
+    opacity: 0.22;
+    z-index: 1;
+  }
+
+  .hero-img-mask {
+    position: absolute;
+    bottom: 0;
+    right: 30px;
+    width: 640px;
+    height: 640px;
+    border-radius: 50%;
+    overflow: hidden;
+    z-index: 2;
+  }
+
+  .hero-img-mask img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+  }
+
+  /* ===== LOGO ===== */
+  .logo-wrap {
+    position: absolute;
+    bottom: 70px;
+    left: 80px;
+    z-index: 10;
+  }
+
+  .logo-wrap img {
+    height: 70px;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+    opacity: 0.85;
+  }
+
+</style>
+</head>
+<body>
+
+  <!-- Abstract decorations -->
+  <div class="deco-circle-tl"></div>
+  <div class="deco-circle-tr"></div>
+  <div class="deco-circle-ml"></div>
+  <div class="deco-line-1"></div>
+  <div class="deco-line-2"></div>
+  <div class="deco-dot deco-dot-1"></div>
+  <div class="deco-dot deco-dot-2"></div>
+  <div class="deco-dot deco-dot-3"></div>
+  <div class="deco-dot deco-dot-4"></div>
+  <div class="deco-dot deco-dot-5"></div>
+  <div class="deco-dot deco-dot-6"></div>
+  <div class="deco-square-1"></div>
+  <div class="deco-square-2"></div>
+  <div class="deco-arc-bl"></div>
+  <div class="deco-arc-bl2"></div>
+  <div class="deco-slash"></div>
+
+  <!-- Text -->
+  <div class="text-area">
+    <div class="headline">{{headline}}</div>
+    <div class="subtext">{{subtext}}</div>
+  </div>
+
+  <!-- Logo -->
+  <div class="logo-wrap">
+    <img src="{{logoUrl}}" alt="logo" />
+  </div>
+
+  <!-- Hero image circle -->
+  <div class="hero-circle-wrap">
+    <div class="hero-ring-outer"></div>
+    <div class="hero-ring"></div>
+    <div class="hero-img-mask">
+      <img src="{{heroImage}}" alt="hero" />
+    </div>
+  </div>
+
+</body>
+</html>
