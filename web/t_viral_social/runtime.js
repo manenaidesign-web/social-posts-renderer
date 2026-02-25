@@ -45,6 +45,15 @@
     setVar('--bgCss', '#000000');
   }
 
+  const bgEl = document.querySelector('.bg');
+  if (bgEl) {
+    if (bg && bg.css) {
+      bgEl.style.background = bg.css;
+    } else {
+      bgEl.style.background = '#000000';
+    }
+  }
+
   // 5. Decor anchor CSS vars
   const decorAnchors = (template.anchors && template.anchors.decor) || {};
   const decorKey =

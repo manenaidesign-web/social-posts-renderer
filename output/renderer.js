@@ -75,7 +75,7 @@ export const renderToPNG = async (input, maybeCss) => {
         timeout: 12000
       })
     } catch (error) {
-      // Ignore timeout for legacy templates that don't set __RENDER_READY__
+      console.warn('waitForFunction __RENDER_READY__ timed out or failed, continuing render:', error?.message || error)
     }
     
     const screenshot = await page.screenshot({
