@@ -18,13 +18,13 @@
 }
 
 body {
+  background: transparent !important;
   margin: 0;
   padding: 0;
   width: 1080px;
   height: 1080px;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Heebo', 'Assistant',
     sans-serif;
-  background: #000;
   color: #ffffff;
 }
 

@@ -118,7 +118,6 @@ ${css || ''}
     console.log('[renderer] __RENDER_READY__ confirmed, taking screenshot...')
     const screenshot = await page.screenshot({
       type: 'png',
-      fullPage: false,
       clip: { x: 0, y: 0, width: 1080, height: 1080 }
     })
     
