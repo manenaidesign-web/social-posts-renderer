@@ -2,20 +2,19 @@
 
 import { chromium } from 'playwright'
 
-let browserPromise = null
+let _browserPromise = null
 
 const getBrowser = async () => {
-  if (!browserPromise) {
-    browserPromise = chromium.launch({
+  if (!_browserPromise) {
+    _browserPromise = chromium.launch({
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     }).catch(error => {
-      browserPromise = null
+      _browserPromise = null
       throw error
     })
   }
-  
-  return browserPromise
+  return _browserPromise
 }
 
 export const renderToPNG = async (input, maybeCss) => {
@@ -33,10 +32,16 @@ export const renderToPNG = async (input, maybeCss) => {
   console.log('[renderer] html length received:', html ? html.length : 0)
   
   let context
-  
+
   try {
-    const browser = await getBrowser()
-    
+    let browser
+    try {
+      browser = await getBrowser()
+    } catch (err) {
+      _browserPromise = null
+      throw err
+    }
+
     context = await browser.newContext({
       viewport: { width, height },
       deviceScaleFactor: 2
@@ -49,30 +54,20 @@ export const renderToPNG = async (input, maybeCss) => {
     page.on('console', msg => {
       console.log('[renderer] CONSOLE:', msg.type(), msg.text())
     })
-    
-    const fullHTML = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="UTF-8">
-          <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&family=Assistant:wght@400;700&display=swap" rel="stylesheet">
-          <style>
-            ${css}
-            * {
-              font-family: 'Heebo', 'Assistant', Arial, sans-serif !important;
-            }
-            * {
-              animation: none !important;
-              transition: none !important;
-            }
-          </style>
-        </head>
-        <body>
-          ${html}
-        </body>
-      </html>
-    `
-    
+
+    const fullHTML = html.trimStart().toLowerCase().startsWith('<!doctype')
+      ? html
+      : `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8">
+<style>
+${css || ''}
+* { animation: none !important; transition: none !important; }
+</style>
+</head>
+<body>${html}</body>
+</html>`
+
     await page.setContent(fullHTML, {
       waitUntil: 'load',
       timeout: 10000

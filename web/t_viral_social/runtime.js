@@ -30,6 +30,8 @@
   setVar('--accent', tokens.accent || '#f97316');
   setVar('--textOnPrimary', tokens.textOnPrimary || '#ffffff');
   setVar('--textOnAccent', tokens.textOnAccent || '#111827');
+  setVar('--fontPrimary', tokens.fontPrimary || 'Heebo');
+  setVar('--fontSecondary', tokens.fontSecondary || 'Assistant');
 
   // 4. Background CSS from decisions.backgroundId
   const backgrounds = (template.decisionSpace && template.decisionSpace.backgrounds) || {};
@@ -164,22 +166,14 @@
   const waitForFonts = document.fonts ? document.fonts.ready : Promise.resolve()
   waits.push(waitForFonts)
 
-  if (logoImg && logoImg.src) {
-    if (logoImg.decode) {
-      waits.push(logoImg.decode().catch(() => {}))
-    }
+  if (logoImg && logoImg.src && !String(logoImg.src).endsWith('/')) {
+    waits.push(logoImg.decode().catch(() => {}))
   }
-
-  if (heroImg && heroImg.src) {
-    if (heroImg.decode) {
-      waits.push(heroImg.decode().catch(() => {}))
-    }
+  if (heroImg && heroImg.src && !String(heroImg.src).endsWith('/')) {
+    waits.push(heroImg.decode().catch(() => {}))
   }
-
-  if (decorImg && decorImg.src) {
-    if (decorImg.decode) {
-      waits.push(decorImg.decode().catch(() => {}))
-    }
+  if (decorImg && decorImg.src && !String(decorImg.src).endsWith('/')) {
+    waits.push(decorImg.decode().catch(() => {}))
   }
 
   await Promise.all(waits);

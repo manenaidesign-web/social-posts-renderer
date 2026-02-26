@@ -4,6 +4,8 @@
   --accent: #f97316;
   --textOnPrimary: #ffffff;
   --textOnAccent: #111827;
+  --fontPrimary: Heebo;
+  --fontSecondary: Assistant;
   --bgCss: #000000;
   --decorX: 820px;
   --decorY: 650px;
@@ -108,6 +110,7 @@ body {
 }
 
 #headline {
+  font-family: var(--fontPrimary), sans-serif;
   font-weight: 900;
   font-size: 96px;
   line-height: 1.02;
@@ -121,6 +124,7 @@ body {
 }
 
 #subtext {
+  font-family: var(--fontSecondary), sans-serif;
   margin-top: 20px;
   font-size: 32px;
   line-height: 1.25;

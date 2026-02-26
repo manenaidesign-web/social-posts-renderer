@@ -3,6 +3,10 @@
 import { ComponentLibrary } from '../components/ComponentLibrary.js'
 import { decideRules } from './DecisionEngine.js'
 import fs from 'fs'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export class TemplateRenderer {
   constructor(templateId) {
@@ -96,10 +100,11 @@ export class TemplateRenderer {
     }
     
     const webConfig = tpl.web || {}
-    const templateHtmlPath = webConfig.templateHtml
-    const styleCssPath = webConfig.styleCss
-    const fitJsPath = webConfig.fitJs
-    const runtimeJsPath = webConfig.runtimeJs
+    const resolveWebPath = (p) => (p ? join(__dirname, '..', p.replace(/^\.\//, '')) : null)
+    const templateHtmlPath = resolveWebPath(webConfig.templateHtml)
+    const styleCssPath = resolveWebPath(webConfig.styleCss)
+    const fitJsPath = resolveWebPath(webConfig.fitJs)
+    const runtimeJsPath = resolveWebPath(webConfig.runtimeJs)
 
     console.log('[TemplateRenderer.renderV2] file paths', {
       templateId: this.templateId,
@@ -112,7 +117,9 @@ export class TemplateRenderer {
     console.log('[V2] paths:', { templateHtmlPath, styleCssPath, fitJsPath, runtimeJsPath })
     
     const templateHtml = fs.readFileSync(templateHtmlPath, 'utf8')
-    const styleCss = fs.readFileSync(styleCssPath, 'utf8')
+    const googleFontsImport = "@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&family=Assistant:wght@400;700&display=swap');\n"
+    let styleCss = fs.readFileSync(styleCssPath, 'utf8')
+    styleCss = googleFontsImport + styleCss
     const fitJs = fs.readFileSync(fitJsPath, 'utf8')
     const runtimeJs = fs.readFileSync(runtimeJsPath, 'utf8')
 
