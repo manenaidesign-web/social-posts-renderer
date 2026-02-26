@@ -71,7 +71,19 @@ ${css || ''}
       waitUntil: 'load',
       timeout: 10000
     })
-    
+
+    await page.addStyleTag({
+      content: `
+  :root {
+    color-scheme: light !important;
+  }
+  .canvas {
+    display: block !important;
+    visibility: visible !important;
+  }
+`
+    })
+
     console.log('[renderer] waiting for RENDER_READY...')
     
     try {
@@ -86,7 +98,9 @@ ${css || ''}
 
     console.log('[renderer] __RENDER_READY__ confirmed, taking screenshot...')
     const screenshot = await page.screenshot({
-      type: 'png'
+      type: 'png',
+      fullPage: false,
+      clip: { x: 0, y: 0, width: 1080, height: 1080 }
     })
     
     await context.close()
