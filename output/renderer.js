@@ -96,6 +96,25 @@ ${css || ''}
       await page.waitForTimeout(5000)
     }
 
+    const debugInfo = await page.evaluate(() => {
+      const canvas = document.querySelector('.canvas')
+      const bg = document.querySelector('.bg')
+      const computed = window.getComputedStyle(canvas)
+      const bgComputed = window.getComputedStyle(bg)
+      return {
+        canvasWidth: canvas ? canvas.offsetWidth : 'NOT FOUND',
+        canvasHeight: canvas ? canvas.offsetHeight : 'NOT FOUND',
+        canvasBg: computed.backgroundColor,
+        bgBackground: bgComputed.background,
+        primaryVar: getComputedStyle(document.documentElement).getPropertyValue('--primary'),
+        bgCssVar: getComputedStyle(document.documentElement).getPropertyValue('--bgCss'),
+        bodyBg: getComputedStyle(document.body).backgroundColor,
+        renderReady: window.__RENDER_READY__,
+        payloadExists: !!window.__PAYLOAD__
+      }
+    })
+    console.log('[renderer] DEBUG:', JSON.stringify(debugInfo))
+
     console.log('[renderer] __RENDER_READY__ confirmed, taking screenshot...')
     const screenshot = await page.screenshot({
       type: 'png',
