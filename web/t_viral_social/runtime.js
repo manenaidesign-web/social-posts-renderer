@@ -163,8 +163,11 @@
 
   // 11. Wait for fonts + key images
   const waits = []
-  const waitForFonts = document.fonts ? document.fonts.ready : Promise.resolve()
-  waits.push(waitForFonts)
+  waits.push(
+    document.fonts
+      ? Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 3000))])
+      : Promise.resolve()
+  )
 
   if (heroImg && heroImg.src && heroImg.src !== window.location.href) {
     waits.push(heroImg.decode().catch(() => {}))

@@ -76,11 +76,11 @@ ${css || ''}
     
     try {
       await page.waitForFunction('window.__RENDER_READY__ === true', {
-        timeout: 12000
+        timeout: 30000
       })
     } catch (error) {
       console.warn('waitForFunction __RENDER_READY__ timed out or failed, continuing render:', error?.message || error)
-      await page.waitForTimeout(3000)
+      await page.waitForTimeout(5000)
     }
     
     const screenshot = await page.screenshot({
