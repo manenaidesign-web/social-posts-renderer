@@ -18,21 +18,22 @@
 }
 
 body {
+  margin: 0 !important;
+  padding: 0 !important;
   background: transparent !important;
-  margin: 0;
-  padding: 0;
-  width: 1080px;
-  height: 1080px;
+  width: 1080px !important;
+  height: 1080px !important;
+  overflow: hidden !important;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Heebo', 'Assistant',
     sans-serif;
   color: #ffffff;
 }
 
 .canvas {
-  position: relative;
-  width: 1080px;
-  height: 1080px;
-  overflow: hidden;
+  position: relative !important;
+  width: 1080px !important;
+  height: 1080px !important;
+  overflow: hidden !important;
   background: var(--primary);
 }
 

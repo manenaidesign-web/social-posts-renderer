@@ -43,8 +43,9 @@ export const renderToPNG = async (input, maybeCss) => {
     }
 
     context = await browser.newContext({
-      viewport: { width, height },
-      deviceScaleFactor: 2
+      viewport: { width: 1080, height: 1080 },
+      deviceScaleFactor: 2,
+      colorScheme: 'light'
     })
     
     const page = await context.newPage()
@@ -116,11 +117,14 @@ ${css || ''}
     console.log('[renderer] DEBUG:', JSON.stringify(debugInfo))
 
     console.log('[renderer] __RENDER_READY__ confirmed, taking screenshot...')
-    const screenshot = await page.screenshot({
-      type: 'png',
-      clip: { x: 0, y: 0, width: 1080, height: 1080 }
-    })
-    
+    const canvasEl = await page.$('.canvas')
+    let screenshot
+    if (canvasEl) {
+      screenshot = await canvasEl.screenshot({ type: 'png' })
+    } else {
+      screenshot = await page.screenshot({ type: 'png', clip: { x: 0, y: 0, width: 1080, height: 1080 } })
+    }
+
     await context.close()
     
     return screenshot.toString('base64')
