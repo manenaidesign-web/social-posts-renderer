@@ -48,14 +48,13 @@ export const renderToPNG = async (input, maybeCss) => {
     })
     
     const page = await context.newPage()
-    page.on('pageerror', err => {
-      console.log('[renderer] PAGE ERROR:', err?.message || err)
-    })
+    page.on('pageerror', err => console.log('[renderer] PAGE ERROR:', err.message))
     page.on('console', msg => {
-      console.log('[renderer] CONSOLE:', msg.type(), msg.text())
+      if (msg.type() === 'error') console.log('[renderer] CONSOLE ERROR:', msg.text())
     })
 
-    const fullHTML = html.trimStart().toLowerCase().startsWith('<!doctype')
+    const isFullDocument = html.trimStart().toLowerCase().startsWith('<!doctype')
+    const fullHTML = isFullDocument
       ? html
       : `<!DOCTYPE html>
 <html>

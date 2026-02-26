@@ -166,13 +166,13 @@
   const waitForFonts = document.fonts ? document.fonts.ready : Promise.resolve()
   waits.push(waitForFonts)
 
-  if (logoImg && logoImg.src && !String(logoImg.src).endsWith('/')) {
-    waits.push(logoImg.decode().catch(() => {}))
-  }
-  if (heroImg && heroImg.src && !String(heroImg.src).endsWith('/')) {
+  if (heroImg && heroImg.src && heroImg.src !== window.location.href) {
     waits.push(heroImg.decode().catch(() => {}))
   }
-  if (decorImg && decorImg.src && !String(decorImg.src).endsWith('/')) {
+  if (logoImg && logoImg.src && logoImg.src !== window.location.href) {
+    waits.push(logoImg.decode().catch(() => {}))
+  }
+  if (decorImg && decorImg.src && decorImg.src !== window.location.href) {
     waits.push(decorImg.decode().catch(() => {}))
   }
 
@@ -203,8 +203,8 @@
     decisions,
     requestMeta
   };
-  } catch (error) {
-    console.error('[runtime] error in Viral Social runtime:', error);
+  } catch (e) {
+    console.error('runtime error:', e)
   } finally {
     window.__RENDER_READY__ = true;
   }

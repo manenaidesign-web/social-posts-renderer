@@ -6,7 +6,8 @@ import fs from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 export class TemplateRenderer {
   constructor(templateId) {
@@ -99,12 +100,11 @@ export class TemplateRenderer {
       requestMeta
     }
     
-    const webConfig = tpl.web || {}
-    const resolveWebPath = (p) => (p ? join(__dirname, '..', p.replace(/^\.\//, '')) : null)
-    const templateHtmlPath = resolveWebPath(webConfig.templateHtml)
-    const styleCssPath = resolveWebPath(webConfig.styleCss)
-    const fitJsPath = resolveWebPath(webConfig.fitJs)
-    const runtimeJsPath = resolveWebPath(webConfig.runtimeJs)
+    const web = tpl.web || {}
+    const templateHtmlPath = join(__dirname, '..', (web.templateHtml || '').replace('./', ''))
+    const styleCssPath = join(__dirname, '..', (web.styleCss || '').replace('./', ''))
+    const fitJsPath = join(__dirname, '..', (web.fitJs || '').replace('./', ''))
+    const runtimeJsPath = join(__dirname, '..', (web.runtimeJs || '').replace('./', ''))
 
     console.log('[TemplateRenderer.renderV2] file paths', {
       templateId: this.templateId,
@@ -149,10 +149,10 @@ export class TemplateRenderer {
     console.log('[V2] template html length before replace:', templateHtml.length)
     
     let fullHTML = templateHtml
-      .replace('/*__STYLE__*/', styleCss)
-      .replace('/*__FIT__*/', fitJs)
-      .replace('/*__RUNTIME__*/', runtimeJs)
-      .replace('/*__PAYLOAD__*/ {}', `/*__PAYLOAD__*/ ${JSON.stringify(payload)}`)
+      .replace(/\/\*__STYLE__\*\//, styleCss)
+      .replace(/\/\*__FIT__\*\//, fitJs)
+      .replace(/\/\*__RUNTIME__\*\//, runtimeJs)
+      .replace(/\/\*__PAYLOAD__\*\/\s*\{\}/, `/*__PAYLOAD__*/ ${JSON.stringify(payload)}`)
 
     console.log('[TemplateRenderer.renderV2] fullHTML length', fullHTML.length)
     console.log('[V2] final html length:', fullHTML.length)
