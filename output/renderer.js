@@ -118,11 +118,17 @@ ${css || ''}
 
     console.log('[renderer] __RENDER_READY__ confirmed, taking screenshot...')
     const canvasEl = await page.$('.canvas')
+    console.log('[renderer] canvasEl found:', !!canvasEl)
     let screenshot
     if (canvasEl) {
       screenshot = await canvasEl.screenshot({ type: 'png' })
     } else {
       screenshot = await page.screenshot({ type: 'png', clip: { x: 0, y: 0, width: 1080, height: 1080 } })
+    }
+
+    console.log('[renderer] screenshot buffer size:', screenshot ? screenshot.length : 'NULL')
+    if (!screenshot || screenshot.length < 1000) {
+      throw new Error('Screenshot buffer too small or empty: ' + (screenshot ? screenshot.length : 'null'))
     }
 
     await context.close()
