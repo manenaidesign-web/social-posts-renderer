@@ -43,6 +43,8 @@ export class TemplateRenderer {
   }
   
   async renderV2(data = {}, context = {}) {
+    console.log('[V2] renderV2 called')
+    try {
     const tpl = this.config
     const {
       decisions: providedDecisions,
@@ -169,6 +171,10 @@ export class TemplateRenderer {
         templateId: this.templateId,
         decisions
       }
+    }
+    } catch (e) {
+      console.error('[V2] renderV2 CRASHED:', e.message, e.stack)
+      throw e
     }
   }
   

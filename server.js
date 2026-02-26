@@ -48,6 +48,7 @@ app.post('/render', async (req, res) => {
       // ✅ JSON template - כמו עכשיו
       console.log(`Using JSON template: ${jsonPath}`)
       const renderer = new TemplateRenderer(templateId)
+      console.log('[server] calling renderer.render for templateId:', templateId)
       const result = await renderer.render(data)
       html = result.html
       css = result.css
