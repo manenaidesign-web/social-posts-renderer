@@ -156,6 +156,9 @@ export class TemplateRenderer {
 
     console.log('[TemplateRenderer.renderV2] fullHTML length', fullHTML.length)
     console.log('[V2] final html length:', fullHTML.length)
+
+    fs.writeFileSync('/tmp/debug_output.html', fullHTML, 'utf8')
+    console.log('[V2] Wrote debug HTML to /tmp/debug_output.html')
     
     return {
       html: fullHTML,

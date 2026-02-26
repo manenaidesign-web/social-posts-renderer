@@ -83,6 +83,16 @@ app.post('/render', async (req, res) => {
   }
 })
 
+app.get('/debug-html', (req, res) => {
+  try {
+    const html = fs.readFileSync('/tmp/debug_output.html', 'utf8')
+    res.setHeader('Content-Type', 'text/html')
+    res.send(html)
+  } catch (e) {
+    res.json({ error: e.message })
+  }
+})
+
 app.get('/templates', (req, res) => {
   try {
     const files = fs.readdirSync('./configs')
