@@ -1,6 +1,7 @@
 // server.js
 
 import express from 'express'
+import sharp from 'sharp'
 import { TemplateRenderer } from './engine/TemplateRenderer.js'
 import { renderToPNG } from './output/renderer.js'
 import { uploadToS3 } from './utils/upload.js'
@@ -84,6 +85,32 @@ app.post('/render', async (req, res) => {
   } catch (error) {
     console.error('Render error:', error)
     res.status(500).json({ success: false, error: error.message })
+  }
+})
+
+app.post('/check-image', async (req, res) => {
+  try {
+    const { imageUrl } = req.body
+    if (!imageUrl) return res.status(400).json({ error: 'imageUrl required' })
+
+    const response = await fetch(imageUrl, { signal: AbortSignal.timeout(10000) })
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+
+    const buffer = Buffer.from(await response.arrayBuffer())
+    const metadata = await sharp(buffer).metadata()
+
+    const hasAlpha = !!metadata.hasAlpha
+    const aspectRatio = metadata.width / metadata.height
+
+    res.json({
+      hasAlpha,
+      aspectRatio,
+      width: metadata.width,
+      height: metadata.height,
+      format: metadata.format
+    })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
   }
 })
 
