@@ -62,7 +62,8 @@ app.post('/render', async (req, res) => {
     let imageUrl = null
     if (process.env.S3_BUCKET && process.env.AWS_ACCESS_KEY_ID) {
       try {
-        imageUrl = await uploadToS3(imageBase64, filename)
+        const imageBuffer = Buffer.from(imageBase64, 'base64')
+        imageUrl = await uploadToS3(imageBuffer, filename)
         console.log('✅ Uploaded to S3:', imageUrl)
       } catch (error) {
         console.log('⚠️  S3 upload failed, saving locally:', error.message)
