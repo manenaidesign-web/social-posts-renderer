@@ -87,6 +87,16 @@ export class TemplateRenderer {
       hasAlpha: data.hasAlpha !== undefined ? data.hasAlpha : true
     }
 
+    const heroImageUrlResolved = heroImageUrl || data.heroImageUrl || data.assets?.heroImageUrl || null
+    let heroDataUrl = null
+    if (heroImageUrlResolved) {
+      try {
+        heroDataUrl = await urlToDataUrl(heroImageUrlResolved)
+      } catch (err) {
+        console.warn('[V2] hero fetch failed:', err?.message || err)
+      }
+    }
+
     const logoUrl = data.logoImageUrl || data.logoUrl || data.assets?.logoImageUrl || data.assets?.logoUrl || null
     let logoDataUrl = null
     if (logoUrl) {
@@ -98,7 +108,8 @@ export class TemplateRenderer {
     }
 
     const assets = {
-      heroImageUrl: heroImageUrl || data.heroImageUrl || data.assets?.heroImageUrl || null,
+      heroDataUrl: heroDataUrl || null,
+      heroImageUrl: heroImageUrlResolved,
       logoDataUrl: logoDataUrl || null,
       logoUrl: logoUrl || null,
       decorDataUrl: data.decorDataUrl || data.assets?.decorDataUrl || null
@@ -160,6 +171,7 @@ export class TemplateRenderer {
       content,
       decisions,
       assetsPresent: {
+        heroDataUrl: !!assets.heroDataUrl,
         heroImageUrl: !!assets.heroImageUrl,
         logoDataUrl: !!assets.logoDataUrl,
         logoUrl: !!assets.logoUrl,
@@ -180,6 +192,7 @@ export class TemplateRenderer {
       .replace(/\/\*__FIT__\*\//, fitJs)
       .replace(/\/\*__RUNTIME__\*\//, runtimeJs)
       .replace(payloadRegex, `/*__PAYLOAD__*/ ${payloadStr}`)
+    console.log('[V2] payload injected?', fullHTML.includes('"primary"'))
     if (!fullHTML.includes('"tokens"')) {
       console.error('[TemplateRenderer.renderV2] PAYLOAD INJECTION FAILED: "tokens" not in output. Placeholder in template must be exactly: /*__PAYLOAD__*/ {}')
     }

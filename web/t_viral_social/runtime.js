@@ -131,10 +131,11 @@
     }
   }
 
-  // 9. Hero image
+  // 9. Hero image (use data URL so Playwright can render without network)
   const heroImg = document.getElementById('heroImg');
-  if (heroImg && assets.heroImageUrl) {
-    heroImg.src = assets.heroImageUrl;
+  const heroSrc = assets.heroDataUrl || assets.heroImageUrl || null;
+  if (heroImg && heroSrc) {
+    heroImg.src = heroSrc;
     heroImg.style.display = 'block';
 
     if (decisions.heroMode === 'wide_object') {
