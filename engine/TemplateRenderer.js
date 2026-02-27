@@ -174,11 +174,15 @@ export class TemplateRenderer {
     console.log('[V2] template html length before replace:', templateHtml.length)
     
     const payloadStr = JSON.stringify(payload).replace(/<\/script/gi, '<\\/script')
+    const payloadRegex = /\/\*__PAYLOAD__\*\/\s*\{\}/
     let fullHTML = templateHtml
       .replace(/\/\*__STYLE__\*\//, styleCss)
       .replace(/\/\*__FIT__\*\//, fitJs)
       .replace(/\/\*__RUNTIME__\*\//, runtimeJs)
-      .replace(/\/\*__PAYLOAD__\*\/\s*\{\}/, `/*__PAYLOAD__*/ ${payloadStr}`)
+      .replace(payloadRegex, `/*__PAYLOAD__*/ ${payloadStr}`)
+    if (!fullHTML.includes('"tokens"')) {
+      console.error('[TemplateRenderer.renderV2] PAYLOAD INJECTION FAILED: "tokens" not in output. Placeholder in template must be exactly: /*__PAYLOAD__*/ {}')
+    }
 
     console.log('[TemplateRenderer.renderV2] fullHTML length', fullHTML.length)
     console.log('[V2] final html length:', fullHTML.length)

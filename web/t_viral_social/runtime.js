@@ -8,7 +8,8 @@
   const decisions = p.decisions || {};
   const assets = p.assets || {};
   const requestMeta = p.requestMeta || {};
-  console.log('[runtime] p.tokens:', tokens);
+  console.log('TOKENS:', JSON.stringify(p.tokens));
+  console.log('DECISIONS:', JSON.stringify(p.decisions));
 
   const body = document.body;
 
@@ -101,7 +102,8 @@
 
   setText('#headline', content.headline || '');
   setText('#subtext', content.subtext || '');
-  setText('.badge', content.badge || '');
+  const badgeEl = document.getElementById('badge');
+  if (badgeEl) badgeEl.textContent = content.badge || 'SALE';
   setText('#cta', content.cta || '');
   setText('#fineprint', content.fineprint || '');
 
