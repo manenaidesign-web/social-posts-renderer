@@ -1,12 +1,14 @@
 ;(async function () {
   try {
   const payload = window.__PAYLOAD__ || {};
-  const template = payload.template || {};
-  const tokens = payload.tokens || {};
-  const content = payload.content || {};
-  const decisions = payload.decisions || {};
-  const assets = payload.assets || {};
-  const requestMeta = payload.requestMeta || {};
+  const p = payload;
+  const template = p.template || {};
+  const tokens = p.tokens || {};
+  const content = p.content || {};
+  const decisions = p.decisions || {};
+  const assets = p.assets || {};
+  const requestMeta = p.requestMeta || {};
+  console.log('[runtime] p.tokens:', tokens);
 
   const body = document.body;
 
@@ -17,12 +19,11 @@
   if (decisions.decorAnchor)
     body.dataset.decorAnchor = decisions.decorAnchor;
 
-  // 3. Set CSS vars from tokens
+  // 3. Set CSS vars from tokens (ensure hex values are applied)
   const root = document.documentElement;
   const setVar = (name, value) => {
-    if (value !== undefined && value !== null) {
-      root.style.setProperty(name, String(value));
-    }
+    const v = value !== undefined && value !== null ? String(value).trim() : null;
+    if (v) root.style.setProperty(name, v);
   };
 
   setVar('--primary', tokens.primary || '#ff4b4b');
@@ -42,10 +43,11 @@
   const bgId = decisions.backgroundId || defaultBgId;
   const bg = backgrounds[bgId] || backgrounds[defaultBgId];
 
+  const fallbackBgCss = 'linear-gradient(135deg, var(--primary), #000)';
   if (bg && bg.css) {
     setVar('--bgCss', bg.css);
   } else {
-    setVar('--bgCss', '#000000');
+    setVar('--bgCss', fallbackBgCss);
   }
 
   const bgEl = document.querySelector('.bg');
@@ -53,7 +55,7 @@
     if (bg && bg.css) {
       bgEl.style.background = bg.css;
     } else {
-      bgEl.style.background = '#000000';
+      bgEl.style.background = fallbackBgCss;
     }
   }
 
@@ -73,16 +75,19 @@
   const logoImg = document.getElementById('logoImg');
   const logoText = document.querySelector('.logoText');
 
-  if (assets.logoImageUrl && logoImg) {
-    logoImg.src = assets.logoImageUrl;
+  if (assets.logoDataUrl && logoImg) {
+    logoImg.src = assets.logoDataUrl;
     logoImg.style.display = 'block';
-    if (logoText) {
-      logoText.textContent = content.brandName || content.logoText || '';
-    }
+    if (logoText) logoText.style.display = 'none';
+  } else if (assets.logoUrl && logoImg) {
+    logoImg.src = assets.logoUrl;
+    logoImg.style.display = 'block';
+    if (logoText) logoText.style.display = 'none';
   } else {
     if (logoImg) logoImg.style.display = 'none';
     if (logoText) {
-      logoText.textContent = content.brandName || content.logoText || '';
+      logoText.style.display = '';
+      logoText.textContent = content.logoText || content.brandName || 'BRAND';
     }
   }
 

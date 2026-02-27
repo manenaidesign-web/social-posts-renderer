@@ -48,8 +48,10 @@ app.post('/render', async (req, res) => {
       // ✅ JSON template - כמו עכשיו
       console.log(`Using JSON template: ${jsonPath}`)
       const renderer = new TemplateRenderer(templateId)
+      const requestMeta = req.body.requestMeta || {}
+      const heroImageUrl = req.body.heroImageUrl ?? data.heroImageUrl ?? null
       console.log('[server] calling renderer.render for templateId:', templateId)
-      const result = await renderer.render(data)
+      const result = await renderer.render(data, { requestMeta, heroImageUrl })
       html = result.html
       css = result.css
     } else {
@@ -121,10 +123,11 @@ app.get('/test', async (req, res) => {
     })
     const imageBase64 = await renderToPNG(html, css)
     const filename = `test_${Date.now()}.png`
+    const imageBuffer = Buffer.from(imageBase64, 'base64')
     let imageUrl = null
     if (process.env.S3_BUCKET && process.env.AWS_ACCESS_KEY_ID) {
       try {
-        imageUrl = await uploadToS3(imageBase64, filename)
+        imageUrl = await uploadToS3(imageBuffer, filename)
       } catch (error) {
         console.log('⚠️  S3 upload failed:', error.message)
       }

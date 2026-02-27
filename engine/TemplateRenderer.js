@@ -9,6 +9,14 @@ import { dirname, join } from 'path'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
+async function urlToDataUrl(url) {
+  const res = await fetch(url, { signal: AbortSignal.timeout(10000) })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  const buf = Buffer.from(await res.arrayBuffer())
+  const contentType = res.headers.get('content-type') || 'image/png'
+  return `data:${contentType};base64,${buf.toString('base64')}`
+}
+
 export class TemplateRenderer {
   constructor(templateId) {
     const configPath = `./configs/${templateId}.json`
@@ -52,18 +60,21 @@ export class TemplateRenderer {
       heroImageUrl
     } = context
     
-    const tokens = data.tokens || {
+    const defaultTokens = {
       primary: data.primaryColor || '#FF4B4B',
       secondary: data.secondaryColor || '#111827',
       accent: data.accentColor || '#F97316',
       textOnPrimary: '#FFFFFF',
-      textOnAccent: '#111827'
+      textOnAccent: '#111827',
+      fontPrimary: data.fontPrimary || 'Heebo',
+      fontSecondary: data.fontSecondary || 'Assistant'
     }
+    const tokens = { ...defaultTokens, ...(data.tokens || {}) }
     
     const content = {
       headline: data.headline || data.content?.headline || '',
       subtext: data.subtext || data.content?.subtext || '',
-      cta: data.cta || data.content?.cta || '',
+      cta: data.cta || data.ctaText || data.content?.cta || '',
       fineprint: data.fineprint || data.content?.fineprint || '',
       badge: data.badge || data.content?.badge || '',
       logoText: data.logoText || data.content?.logoText || '',
@@ -75,10 +86,21 @@ export class TemplateRenderer {
       aspectRatio: data.aspectRatio || 1,
       hasAlpha: data.hasAlpha !== undefined ? data.hasAlpha : true
     }
-    
+
+    const logoUrl = data.logoImageUrl || data.logoUrl || data.assets?.logoImageUrl || data.assets?.logoUrl || null
+    let logoDataUrl = null
+    if (logoUrl) {
+      try {
+        logoDataUrl = await urlToDataUrl(logoUrl)
+      } catch (err) {
+        console.warn('[V2] logo fetch failed, will use logoUrl fallback:', err?.message || err)
+      }
+    }
+
     const assets = {
       heroImageUrl: heroImageUrl || data.heroImageUrl || data.assets?.heroImageUrl || null,
-      logoImageUrl: data.logoImageUrl || data.assets?.logoImageUrl || null,
+      logoDataUrl: logoDataUrl || null,
+      logoUrl: logoUrl || null,
       decorDataUrl: data.decorDataUrl || data.assets?.decorDataUrl || null
     }
     
@@ -139,7 +161,8 @@ export class TemplateRenderer {
       decisions,
       assetsPresent: {
         heroImageUrl: !!assets.heroImageUrl,
-        logoImageUrl: !!assets.logoImageUrl,
+        logoDataUrl: !!assets.logoDataUrl,
+        logoUrl: !!assets.logoUrl,
         decorDataUrl: !!assets.decorDataUrl
       },
       requestMeta
@@ -150,11 +173,12 @@ export class TemplateRenderer {
     console.log('[V2] runtimeJs length:', runtimeJs.length)
     console.log('[V2] template html length before replace:', templateHtml.length)
     
+    const payloadStr = JSON.stringify(payload).replace(/<\/script/gi, '<\\/script')
     let fullHTML = templateHtml
       .replace(/\/\*__STYLE__\*\//, styleCss)
       .replace(/\/\*__FIT__\*\//, fitJs)
       .replace(/\/\*__RUNTIME__\*\//, runtimeJs)
-      .replace(/\/\*__PAYLOAD__\*\/\s*\{\}/, `/*__PAYLOAD__*/ ${JSON.stringify(payload)}`)
+      .replace(/\/\*__PAYLOAD__\*\/\s*\{\}/, `/*__PAYLOAD__*/ ${payloadStr}`)
 
     console.log('[TemplateRenderer.renderV2] fullHTML length', fullHTML.length)
     console.log('[V2] final html length:', fullHTML.length)
