@@ -35,6 +35,14 @@
   setVar('--fontPrimary', tokens.fontPrimary || 'Heebo');
   setVar('--fontSecondary', tokens.fontSecondary || 'Assistant');
 
+  const primaryVal = (tokens.primary || '#ff4b4b').trim();
+  const secondaryVal = (tokens.secondary || '#050816').trim();
+  const accentVal = (tokens.accent || '#f97316').trim();
+  const styleEl = document.createElement('style');
+  styleEl.id = 'token-vars';
+  styleEl.textContent = `:root,.canvas{--primary:${primaryVal};--secondary:${secondaryVal};--accent:${accentVal};}`;
+  (document.head || document.documentElement).appendChild(styleEl);
+
   // 4. Background CSS from decisions.backgroundId
   const backgrounds = (template.decisionSpace && template.decisionSpace.backgrounds) || {};
   const defaultBgId =

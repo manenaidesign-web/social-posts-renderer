@@ -186,7 +186,7 @@ export class TemplateRenderer {
     console.log('[V2] template html length before replace:', templateHtml.length)
     
     const payloadStr = JSON.stringify(payload).replace(/<\/script/gi, '<\\/script')
-    const payloadRegex = /\/\*__PAYLOAD__\*\/\s*\{\}/
+    const payloadRegex = /\/\*__PAYLOAD__\*\/[\s\r\n]*\{\s*\}/
     let fullHTML = templateHtml
       .replace(/\/\*__STYLE__\*\//, styleCss)
       .replace(/\/\*__FIT__\*\//, fitJs)
