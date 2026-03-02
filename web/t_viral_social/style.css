@@ -504,3 +504,179 @@ body[data-variant='C'] .hero {
   background-size: 1080px 1080px;
   background-position: 70% 20%;
 }
+
+/* ── Insane Energy final patch ────────────────────────────────── */
+
+/* 0) Neutralize previous DOM asset/manen layers */
+.asset, .asset.wave, .asset.stripes, .asset.sheen,
+.manen-energy, .manen-streaks, .manen-sheen {
+  display: none !important;
+  background: none !important;
+  opacity: 0 !important;
+}
+
+/* 1) Canvas energy via pseudo-elements (no extra DOM needed) */
+.canvas {
+  isolation: isolate;
+}
+
+/* Strong diagonal band */
+.canvas::before {
+  content: "";
+  position: absolute;
+  inset: -10%;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(900px 520px at 75% 35%,
+      rgba(255, 255, 255, 0.12),
+      rgba(255, 255, 255, 0) 60%),
+    linear-gradient(135deg,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0) 28%,
+      var(--accentDeepA, rgba(0, 0, 0, 0.28)) 55%,
+      rgba(0, 0, 0, 0) 88%);
+  transform: rotate(-12deg);
+  mix-blend-mode: multiply;
+  opacity: 1;
+}
+
+/* Motion streaks */
+.canvas::after {
+  content: "";
+  position: absolute;
+  inset: -10%;
+  z-index: 4;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.00) 0px,
+    rgba(255, 255, 255, 0.00) 26px,
+    var(--accentGlowA, rgba(255, 255, 255, 0.10)) 28px,
+    rgba(255, 255, 255, 0.00) 36px
+  );
+  opacity: 0.22;
+  mix-blend-mode: overlay;
+  filter: blur(0.2px);
+}
+
+/* Sheen sweep on .bg */
+.bg::before {
+  content: "";
+  position: absolute;
+  inset: -10%;
+  z-index: 3;
+  pointer-events: none;
+  background: radial-gradient(
+    900px 260px at 75% 20%,
+    rgba(255, 255, 255, 0.14),
+    rgba(255, 255, 255, 0.00) 70%
+  );
+  transform: rotate(-18deg);
+  mix-blend-mode: screen;
+  opacity: 0.9;
+}
+
+/* 2) Hero — clean blend-mode + stronger glow */
+#heroImg {
+  mix-blend-mode: normal !important;
+}
+
+.hero img,
+#heroImg {
+  filter:
+    drop-shadow(0 40px 70px rgba(0, 0, 0, 0.65))
+    drop-shadow(0 0 22px var(--accentGlowShadow, rgba(255, 0, 0, 0.18))) !important;
+}
+
+.heroContact {
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.78), transparent 74%) !important;
+  filter: blur(18px) !important;
+  opacity: 0.62 !important;
+}
+
+/* 3) Logo bigger */
+.logo img,
+#logoImg {
+  max-height: 84px !important;
+  max-width: 320px !important;
+  padding: 6px 10px !important;
+  border-radius: 18px !important;
+  background: rgba(0, 0, 0, 0.16) !important;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.30) !important;
+}
+
+/* 4) Badge sharper */
+.badge {
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.40) !important;
+  background: var(--badgeBg, rgba(255, 0, 0, 0.86)) !important;
+}
+
+/* 5) CTA — always visible, premium, no skew bugs */
+.cta {
+  position: absolute !important;
+  z-index: 6 !important;
+  right: 140px !important;
+  bottom: 110px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 420px !important;
+  height: 78px !important;
+  border-radius: 999px !important;
+  padding: 0 34px !important;
+  font-weight: 900 !important;
+  font-size: 28px !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  background:
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 48%),
+    linear-gradient(135deg, var(--accentGlow, var(--accent)) 0%, var(--accentDeep, var(--accent)) 70%) !important;
+  color: var(--ctaTextColor, #ffffff) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow:
+    0 24px 52px rgba(0, 0, 0, 0.55),
+    0 10px 20px rgba(0, 0, 0, 0.32),
+    inset 0 2px 8px rgba(255, 255, 255, 0.16) !important;
+  transform: none !important;
+}
+
+.cta::before {
+  content: "";
+  position: absolute;
+  inset: 2px 2px auto 2px;
+  height: 48%;
+  border-radius: 999px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0));
+  opacity: 0.55;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+.cta::after {
+  content: "➜";
+  position: absolute;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 900;
+  opacity: 0.92;
+  pointer-events: none;
+}
+
+.cta.cta--light {
+  border-color: rgba(0, 0, 0, 0.16) !important;
+  text-shadow: none !important;
+}
+
+/* 6) Z-index safety */
+.bg    { z-index: 1 !important; }
+.hero  { z-index: 2 !important; }
+.layer { z-index: 3 !important; }
+.textWrap { z-index: 5 !important; position: absolute !important; }
+.logo, .badge { z-index: 7 !important; }
+
+#headline { text-shadow: 0 10px 30px rgba(0, 0, 0, 0.60) !important; }
+#subtitle  { text-shadow: 0 8px 22px rgba(0, 0, 0, 0.52) !important; }
