@@ -373,6 +373,39 @@ body[data-variant='C'] .hero {
   height: 46%;
 }
 
+/* ── Brand-tinted SVG asset layers ───────────────────────────── */
+
+.asset {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4; /* between depth layers (3) and textWrap (5) */
+}
+
+.asset.wave {
+  opacity: 0.55;
+  mix-blend-mode: overlay;
+  background-repeat: no-repeat;
+  background-size: 1200px 1200px;
+  background-position: 60% 75%;
+}
+
+.asset.stripes {
+  opacity: 0.28;
+  mix-blend-mode: soft-light;
+  background-repeat: no-repeat;
+  background-size: 1100px 1100px;
+  background-position: 15% 5%;
+}
+
+.asset.sheen {
+  opacity: 0.55;
+  mix-blend-mode: screen;
+  background-repeat: no-repeat;
+  background-size: 1400px 1400px;
+  background-position: 70% 15%;
+}
+
 /* ── CTA auto-contrast patch ──────────────────────────────────── */
 
 .cta {

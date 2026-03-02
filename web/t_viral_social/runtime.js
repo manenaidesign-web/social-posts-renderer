@@ -248,7 +248,34 @@
     void successSubtext;
   }
 
-  // 13. Meta & ready flag
+  // 13. Brand-tinted SVG assets (wave / stripes / sheen)
+  ;(function () {
+    function svgUri(svg) {
+      return 'data:image/svg+xml;charset=utf-8,' +
+        encodeURIComponent(svg).replace(/%0A/g, '').replace(/%20/g, ' ');
+    }
+    function cv(name, fb) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fb;
+    }
+    const ac = cv('--accent', '#ff0000');
+    const sc = cv('--secondary', '#333333');
+    const nt = cv('--neutral', '#ffffff');
+
+    const waveSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200"><defs><linearGradient id="g" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="${sc}" stop-opacity="0"/><stop offset="0.55" stop-color="${ac}" stop-opacity="0.22"/><stop offset="1" stop-color="${ac}" stop-opacity="0"/></linearGradient><filter id="blur"><feGaussianBlur stdDeviation="0.6"/></filter></defs><g filter="url(#blur)" transform="rotate(-12 600 600)"><path d="M-80 880 C 220 720,420 1010,720 850 C 980 710,1060 760,1280 640" fill="none" stroke="url(#g)" stroke-width="120" stroke-linecap="round"/><path d="M-120 980 C 180 820,440 1140,760 960 C 1000 840,1120 900,1340 780" fill="none" stroke="${ac}" stroke-opacity="0.10" stroke-width="64" stroke-linecap="round"/><path d="M-40 760 C 240 600,520 900,840 740 C 1060 630,1140 690,1320 560" fill="none" stroke="${sc}" stroke-opacity="0.10" stroke-width="46" stroke-linecap="round"/></g></svg>`;
+
+    const stripesSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="1100" viewBox="0 0 1100 1100"><defs><pattern id="p" width="28" height="28" patternUnits="userSpaceOnUse" patternTransform="rotate(-35)"><rect width="28" height="28" fill="transparent"/><rect x="0" y="0" width="8" height="28" fill="${ac}" fill-opacity="0.10"/></pattern><mask id="fade"><linearGradient id="m" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="white" stop-opacity="1"/><stop offset="1" stop-color="white" stop-opacity="0"/></linearGradient><rect width="1100" height="1100" fill="url(#m)"/></mask></defs><rect width="1100" height="1100" fill="url(#p)" mask="url(#fade)"/></svg>`;
+
+    const sheenSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1400" viewBox="0 0 1400 1400"><defs><linearGradient id="s" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${nt}" stop-opacity="0"/><stop offset="0.42" stop-color="${nt}" stop-opacity="0.12"/><stop offset="0.55" stop-color="${nt}" stop-opacity="0.22"/><stop offset="0.70" stop-color="${nt}" stop-opacity="0.06"/><stop offset="1" stop-color="${nt}" stop-opacity="0"/></linearGradient></defs><g transform="rotate(-18 700 700)"><ellipse cx="980" cy="240" rx="760" ry="220" fill="url(#s)"/></g></svg>`;
+
+    const waveEl   = document.querySelector('.asset.wave');
+    const stripesEl = document.querySelector('.asset.stripes');
+    const sheenEl  = document.querySelector('.asset.sheen');
+    if (waveEl)   waveEl.style.backgroundImage   = `url("${svgUri(waveSvg)}")`;
+    if (stripesEl) stripesEl.style.backgroundImage = `url("${svgUri(stripesSvg)}")`;
+    if (sheenEl)  sheenEl.style.backgroundImage  = `url("${svgUri(sheenSvg)}")`;
+  })();
+
+  // 14. Meta & ready flag
   window.__RENDER_META__ = {
     templateId: template.id,
     decisions,
