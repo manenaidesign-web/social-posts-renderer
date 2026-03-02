@@ -187,11 +187,14 @@ export class TemplateRenderer {
     
     const payloadStr = JSON.stringify(payload).replace(/<\/script/gi, '<\\/script')
     const payloadRegex = /\/\*__PAYLOAD__\*\/[\s\r\n]*\{\s*\}/
+    // Use function replacements: a function's return value is used literally,
+    // whereas a plain string is scanned for $& / $' / $` / $n special patterns
+    // which corrupt the injected JS/CSS (e.g. '\\$&' in runtime.js escapeRegExp).
     let fullHTML = templateHtml
-      .replace(/\/\*__STYLE__\*\//, styleCss)
-      .replace(/\/\*__FIT__\*\//, fitJs)
-      .replace(/\/\*__RUNTIME__\*\//, runtimeJs)
-      .replace(payloadRegex, `/*__PAYLOAD__*/ ${payloadStr}`)
+      .replace(/\/\*__STYLE__\*\//, () => styleCss)
+      .replace(/\/\*__FIT__\*\//, () => fitJs)
+      .replace(/\/\*__RUNTIME__\*\//, () => runtimeJs)
+      .replace(payloadRegex, () => `/*__PAYLOAD__*/ ${payloadStr}`)
     console.log('[V2] payload injected?', fullHTML.includes('"primary"'))
     if (!fullHTML.includes('"tokens"')) {
       console.error('[TemplateRenderer.renderV2] PAYLOAD INJECTION FAILED: "tokens" not in output. Placeholder in template must be exactly: /*__PAYLOAD__*/ {}')
