@@ -275,8 +275,8 @@
     if (sheenEl)  sheenEl.style.backgroundImage  = `url("${svgUri(sheenSvg)}")`;
   })();
 
-  // 14. Insane Energy — derived colors + CTA contrast (CSS pseudo-element approach)
-  ;(function applyEnergyColors() {
+  // 14. Perfect Base — derived colors, CTA/badge fallbacks
+  ;(function applyPerfectBase() {
     function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
     function hexToRgb(hex) {
       if (!hex) return null;
@@ -315,17 +315,15 @@
       const accent  = cv('--accent',  '#ff0000');
       const primary = cv('--primary', '#0b0b0b');
 
-      const accentDeep = mix(accent, '#000000', 0.22);
+      const accentDeep = mix(accent, '#000000', 0.24);
       const accentGlow = mix(accent, '#ffffff', 0.18);
 
       const dde = document.documentElement;
       dde.style.setProperty('--accentDeep', accentDeep);
       dde.style.setProperty('--accentGlow', accentGlow);
-      // alpha versions used by canvas::before / ::after in CSS
-      dde.style.setProperty('--accentDeepA', mix(accentDeep, primary, 0.25));
-      dde.style.setProperty('--accentGlowA', 'rgba(255,255,255,0.12)');
-      // hero glow shadow
+      dde.style.setProperty('--accentDeepA', mix(accentDeep, primary, 0.22));
       dde.style.setProperty('--accentGlowShadow', mix(accentGlow, '#000000', 0.55));
+      dde.style.setProperty('--badgeBg', accent);
 
       // CTA contrast
       const rgb = hexToRgb(accent);
@@ -335,9 +333,12 @@
       const ctaEl = document.querySelector('.cta');
       if (ctaEl) {
         ctaEl.classList.toggle('cta--light', ctaTextColor !== '#ffffff');
-        // ensure CTA is never empty
-        const t = (ctaEl.textContent || '').trim();
-        if (!t) ctaEl.textContent = 'SHOP NOW';
+        if (!(ctaEl.textContent || '').trim()) ctaEl.textContent = 'SHOP NOW';
+      }
+
+      const badgeEl = document.querySelector('.badge');
+      if (badgeEl && !(badgeEl.textContent || '').trim()) {
+        badgeEl.textContent = 'SPECIAL';
       }
     }
 
