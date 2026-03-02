@@ -43,6 +43,34 @@
   styleEl.textContent = `:root,.canvas{--primary:${primaryVal};--secondary:${secondaryVal};--accent:${accentVal};}`;
   (document.head || document.documentElement).appendChild(styleEl);
 
+  // 3b. CTA auto-contrast: pick dark/light text based on --accent luminance
+  (function () {
+    function hexToRgb(hex) {
+      if (!hex) return null;
+      let h = String(hex).trim();
+      if (h.startsWith('rgb')) return null;
+      if (h[0] === '#') h = h.slice(1);
+      if (h.length === 3) h = h.split('').map(c => c + c).join('');
+      if (h.length !== 6) return null;
+      const n = parseInt(h, 16);
+      return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+    }
+    function luminance({ r, g, b }) {
+      return [r, g, b].reduce((sum, v, i) => {
+        v /= 255;
+        const lin = v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+        return sum + lin * [0.2126, 0.7152, 0.0722][i];
+      }, 0);
+    }
+    const accent = getComputedStyle(document.documentElement)
+      .getPropertyValue('--accent').trim();
+    const rgb = hexToRgb(accent);
+    const textColor = rgb && luminance(rgb) > 0.53 ? '#111827' : '#ffffff';
+    root.style.setProperty('--ctaTextColor', textColor);
+    const ctaEl = document.querySelector('.cta');
+    if (ctaEl) ctaEl.classList.toggle('cta--light', textColor !== '#ffffff');
+  })();
+
   // 4. Background CSS from decisions.backgroundId
   const backgrounds = (template.decisionSpace && template.decisionSpace.backgrounds) || {};
   const defaultBgId =
