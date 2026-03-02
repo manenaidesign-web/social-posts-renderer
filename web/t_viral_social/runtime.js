@@ -275,8 +275,8 @@
     if (sheenEl)  sheenEl.style.backgroundImage  = `url("${svgUri(sheenSvg)}")`;
   })();
 
-  // 14. Perfect Base — derived colors, CTA/badge fallbacks
-  ;(function applyPerfectBase() {
+  // 14. Campaign Upgrade — colors, spill, badge text, headline emphasis, bg curve
+  ;(function applyCampaignUpgrade() {
     function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
     function hexToRgb(hex) {
       if (!hex) return null;
@@ -311,35 +311,77 @@
       return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fb;
     }
 
+    function ensureBgCurve() {
+      const bg = document.querySelector('.bg');
+      if (!bg || bg.querySelector('.manen-curve')) return;
+      const d = document.createElement('div');
+      d.className = 'manen-curve';
+      bg.appendChild(d);
+    }
+
+    function setBadgeText() {
+      const badge = document.querySelector('.badge');
+      if (!badge) return;
+      let t = (badge.textContent || '').trim();
+      if (!t) {
+        const h = (document.querySelector('#headline')?.textContent || '').trim();
+        const s = (document.querySelector('#subtitle')?.textContent || '').trim();
+        const m = (h + ' ' + s).match(/(\d+\s*%)/);
+        badge.textContent = m ? m[1] + ' OFF' : 'SPECIAL';
+      }
+    }
+
+    function emphasizeHeadline() {
+      const el = document.querySelector('#headline');
+      if (!el || el.querySelector('.manen-em') || el.querySelector('.manen-em-outline')) return;
+      const raw = (el.textContent || '').trim();
+      if (!raw) return;
+
+      const tokens = raw.split(/\s+/).filter(Boolean);
+      let idx = tokens.findIndex(t => /%/.test(t) || /^\d+/.test(t));
+      if (idx === -1) {
+        const strong = ['ATTACK','MANIA','SAVINGS','DEAL','OFF','SALE','GALORE','SURPRISE','LIMITED','SPECIAL'];
+        idx = tokens.findIndex(t => strong.includes(t.replace(/[^\w]/g, '').toUpperCase()));
+      }
+      if (idx === -1) idx = Math.max(0, tokens.length - 1);
+
+      const tok = tokens[idx] || '';
+      const outline = tok.length <= 5 && tokens.length >= 2;
+      tokens[idx] = outline
+        ? `<span class="manen-em-outline">${tok}</span>`
+        : `<span class="manen-em">${tok}</span>`;
+      el.innerHTML = tokens.join(' ');
+    }
+
     function apply() {
       const accent  = cv('--accent',  '#ff0000');
       const primary = cv('--primary', '#0b0b0b');
 
-      const accentDeep = mix(accent, '#000000', 0.24);
-      const accentGlow = mix(accent, '#ffffff', 0.18);
+      const accentDeep = mix(accent, '#000000', 0.26);
+      const accentGlow = mix(accent, '#ffffff', 0.20);
 
       const dde = document.documentElement;
       dde.style.setProperty('--accentDeep', accentDeep);
       dde.style.setProperty('--accentGlow', accentGlow);
-      dde.style.setProperty('--accentDeepA', mix(accentDeep, primary, 0.22));
       dde.style.setProperty('--accentGlowShadow', mix(accentGlow, '#000000', 0.55));
+      dde.style.setProperty('--accentSpill',  mix(accentGlow, '#000000', 0.78));
+      dde.style.setProperty('--accentCurve',  mix(accentGlow, primary, 0.45));
+      dde.style.setProperty('--accentDeepA',  mix(accentDeep, primary, 0.22));
       dde.style.setProperty('--badgeBg', accent);
 
       // CTA contrast
       const rgb = hexToRgb(accent);
       const ctaTextColor = rgb && luminance(rgb) > 0.53 ? '#111827' : '#ffffff';
       dde.style.setProperty('--ctaTextColor', ctaTextColor);
-
       const ctaEl = document.querySelector('.cta');
       if (ctaEl) {
         ctaEl.classList.toggle('cta--light', ctaTextColor !== '#ffffff');
         if (!(ctaEl.textContent || '').trim()) ctaEl.textContent = 'SHOP NOW';
       }
 
-      const badgeEl = document.querySelector('.badge');
-      if (badgeEl && !(badgeEl.textContent || '').trim()) {
-        badgeEl.textContent = 'SPECIAL';
-      }
+      ensureBgCurve();
+      setBadgeText();
+      emphasizeHeadline();
     }
 
     apply();
