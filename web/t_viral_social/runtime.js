@@ -108,35 +108,39 @@
     }
   };
 
-  setText('#headline', content.headline || '');
-  setText('#subtext', content.subtext || '');
+  setText('#subtitle', content.subtext || '');
   const badgeEl = document.getElementById('badge');
   if (badgeEl) badgeEl.textContent = content.badge || 'SALE';
   setText('#cta', content.cta || '');
   setText('#fineprint', content.fineprint || '');
 
-  // 8. Emphasis words highlighting
+  // 8. Headline — percent number emphasis + optional word emphasis
   const escapeRegExp = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const emphasizePercent = text =>
+    text.replace(/(\d{1,3}\s?%)/g, '<span class="num">$1</span>');
   const headlineEl = document.getElementById('headline');
-  if (
-    headlineEl &&
-    Array.isArray(decisions.emphasisWords) &&
-    decisions.emphasisWords.length &&
-    content.headline
-  ) {
-    const uniqueWords = decisions.emphasisWords.filter(Boolean);
-    if (uniqueWords.length) {
-      const pattern = new RegExp(
-        '\\b(' +
-          uniqueWords.map(w => escapeRegExp(String(w))).join('|') +
-          ')\\b',
-        'gi'
-      );
-      headlineEl.innerHTML = String(content.headline).replace(
-        pattern,
-        '<span class="em">$1</span>'
-      );
+  if (headlineEl) {
+    let headlineHtml = content.headline || '';
+    if (
+      Array.isArray(decisions.emphasisWords) &&
+      decisions.emphasisWords.length &&
+      content.headline
+    ) {
+      const uniqueWords = decisions.emphasisWords.filter(Boolean);
+      if (uniqueWords.length) {
+        const pattern = new RegExp(
+          '\\b(' +
+            uniqueWords.map(w => escapeRegExp(String(w))).join('|') +
+            ')\\b',
+          'gi'
+        );
+        headlineHtml = String(content.headline).replace(
+          pattern,
+          '<span class="em">$1</span>'
+        );
+      }
     }
+    headlineEl.innerHTML = emphasizePercent(headlineHtml);
   }
 
   // 9. Hero image (use data URL so Playwright can render without network)
@@ -205,7 +209,7 @@
       fallbackVariant: 'C'
     });
 
-    const subtextEl = document.getElementById('subtext');
+    const subtextEl = document.getElementById('subtitle');
     const successSubtext = window.fitSubtext({
       subtextEl,
       tpl: template

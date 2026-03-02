@@ -15,36 +15,43 @@
     data-decor-anchor=""
   >
     <div class="canvas">
+
+      <!-- Zone 1: Background -->
       <div class="bg"></div>
-      <div class="overlay"></div>
 
-      <div class="topbar">
-        <div class="logoSlot">
-          <img id="logoImg" alt="Logo" />
-          <div class="logoText"></div>
-        </div>
-        <div class="badge" id="badge"></div>
-      </div>
-
-      <div class="textBlock">
-        <div id="headline"></div>
-        <div id="subtext"></div>
-      </div>
-
-      <div class="heroSlot">
+      <!-- Zone 2: Hero image -->
+      <div class="hero">
+        <div class="heroContact"></div>
         <img id="heroImg" alt="Hero" />
       </div>
 
+      <!-- Zone 3: Depth overlays -->
+      <div class="layer spot"></div>
+      <div class="layer vignette"></div>
+      <div class="layer noise"></div>
+
+      <!-- Zone 4: Decoration -->
       <div class="decorSlot">
         <img id="decorImg" alt="Decoration" />
       </div>
 
-      <div class="footer">
-        <button class="cta">
-          <span id="cta"></span>
-        </button>
-        <div class="fineprint" id="fineprint"></div>
+      <!-- Zone 5: Text safe area -->
+      <div class="textWrap">
+        <div id="headline"></div>
+        <div id="subtitle"></div>
       </div>
+
+      <!-- Zone 6: CTA + fineprint -->
+      <button class="cta"><span id="cta"></span></button>
+      <div class="fineprint" id="fineprint"></div>
+
+      <!-- Zone 7: Logo + Badge -->
+      <div class="logo">
+        <img id="logoImg" alt="Logo" />
+        <div class="logoText"></div>
+      </div>
+      <div class="badge" id="badge"></div>
+
     </div>
 
     <script>
@@ -58,4 +65,3 @@
     </script>
   </body>
 </html>
-
