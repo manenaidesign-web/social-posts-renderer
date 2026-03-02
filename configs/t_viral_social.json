@@ -10,9 +10,9 @@
     "heroSides": ["left", "right"],
     "decorAnchors": ["none", "top-left", "top-right", "behind-hero", "bottom-left", "bottom-right"],
     "backgrounds": {
-      "bg_01": { "type": "css", "css": "linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)" },
-      "bg_02": { "type": "css", "css": "linear-gradient(160deg, var(--secondary) 0%, var(--primary) 100%)" },
-      "bg_03": { "type": "css", "css": "linear-gradient(180deg, var(--primary) 30%, rgba(0,0,0,0.7) 100%)" }
+      "bg_01": { "type": "css", "css": "linear-gradient(135deg, var(--primary) 70%, var(--secondary) 100%)" },
+      "bg_02": { "type": "css", "css": "linear-gradient(160deg, var(--primary) 60%, var(--secondary) 100%)" },
+      "bg_03": { "type": "css", "css": "linear-gradient(180deg, var(--primary) 80%, var(--secondary) 100%)" }
     }
   },
   "constraints": {
