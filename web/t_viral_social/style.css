@@ -417,3 +417,90 @@ body[data-variant='C'] .hero {
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28) !important;
   text-shadow: none !important;
 }
+
+/* ── Nike Energy patch ────────────────────────────────────────── */
+
+/* Bigger logo */
+.logo img,
+#logoImg {
+  max-height: 78px !important;
+  max-width: 260px !important;
+}
+
+/* Skewed gradient CTA with shine sweep + arrow */
+.cta {
+  background:
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.18), transparent 42%),
+    linear-gradient(135deg, var(--accentGlow, var(--accent)) 0%, var(--accent) 55%, var(--accentDeep, var(--accent)) 100%) !important;
+  transform: skewX(-8deg);
+  overflow: hidden;
+  position: relative;
+}
+
+.cta > * {
+  display: inline-block;
+  transform: skewX(8deg);
+}
+
+.cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.22) 50%,
+    transparent 65%
+  );
+  pointer-events: none;
+}
+
+.cta::after {
+  content: ' ➜';
+  font-size: 0.85em;
+  opacity: 0.82;
+}
+
+/* Stronger hero glow using accentGlow */
+.hero img {
+  filter:
+    drop-shadow(0 32px 54px rgba(0, 0, 0, 0.58))
+    drop-shadow(0 0 28px var(--accentGlowAlpha, rgba(255, 0, 0, 0.30))) !important;
+}
+
+/* manen-* dynamic layers (injected by step 14 JS) */
+.manen-energy {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.95;
+  mix-blend-mode: multiply;
+  background-repeat: no-repeat;
+  background-size: 1080px 1080px;
+  background-position: center bottom;
+}
+
+.manen-streaks {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0.34;
+  mix-blend-mode: overlay;
+  background-repeat: no-repeat;
+  background-size: 1080px 1080px;
+  background-position: center center;
+}
+
+.manen-sheen {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0.60;
+  mix-blend-mode: screen;
+  background-repeat: no-repeat;
+  background-size: 1080px 1080px;
+  background-position: 70% 20%;
+}

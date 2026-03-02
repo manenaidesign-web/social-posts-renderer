@@ -275,7 +275,98 @@
     if (sheenEl)  sheenEl.style.backgroundImage  = `url("${svgUri(sheenSvg)}")`;
   })();
 
-  // 14. Meta & ready flag
+  // 14. Nike Energy — derived colors, upgraded CTA, manen-* layers
+  ;(function () {
+    function cv(n, fb) {
+      return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || fb;
+    }
+    function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
+    function hexToRgb(hex) {
+      if (!hex) return null;
+      let h = String(hex).trim();
+      if (h.startsWith('rgb')) return null;
+      if (h[0] === '#') h = h.slice(1);
+      if (h.length === 3) h = h.split('').map(c => c + c).join('');
+      if (h.length !== 6) return null;
+      const n = parseInt(h, 16);
+      return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+    }
+    function rgbToHex(r, g, b) {
+      return '#' + [r, g, b].map(v => clamp(v, 0, 255).toString(16).padStart(2, '0')).join('');
+    }
+    function mixHex(a, b, t) {
+      const ca = hexToRgb(a), cb = hexToRgb(b);
+      if (!ca || !cb) return a;
+      return rgbToHex(
+        Math.round(ca.r + (cb.r - ca.r) * t),
+        Math.round(ca.g + (cb.g - ca.g) * t),
+        Math.round(ca.b + (cb.b - ca.b) * t)
+      );
+    }
+    function luminance(rgb) {
+      return [rgb.r, rgb.g, rgb.b].reduce((s, v, i) => {
+        v /= 255;
+        return s + (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)) * [0.2126, 0.7152, 0.0722][i];
+      }, 0);
+    }
+    function svgUri(svg) {
+      return 'data:image/svg+xml;charset=utf-8,' +
+        encodeURIComponent(svg).replace(/%0A/g, '').replace(/%20/g, ' ');
+    }
+    function ensureLayer(cls) {
+      const canvas = document.querySelector('.canvas');
+      if (!canvas) return null;
+      let el = canvas.querySelector('.' + cls);
+      if (!el) {
+        el = document.createElement('div');
+        el.className = cls;
+        const tw = canvas.querySelector('.textWrap');
+        if (tw) canvas.insertBefore(el, tw); else canvas.appendChild(el);
+      }
+      return el;
+    }
+
+    const primary = cv('--primary', '#0b0b0b');
+    const accent  = cv('--accent',  '#ff0000');
+    const neutral = cv('--neutral', '#ffffff');
+
+    const accentDeep = mixHex(accent, '#000000', 0.22);
+    const accentGlow = mixHex(accent, '#ffffff', 0.20);
+
+    const dde = document.documentElement;
+    dde.style.setProperty('--accentDeep', accentDeep);
+    dde.style.setProperty('--accentGlow', accentGlow);
+    dde.style.setProperty('--accentGlowAlpha', mixHex(accentGlow, '#000000', 0.65));
+
+    // CTA contrast (overrides step 3b with more precise values)
+    const rgb = hexToRgb(accent);
+    const ctaTextColor = rgb && luminance(rgb) > 0.53 ? '#111827' : '#ffffff';
+    dde.style.setProperty('--ctaTextColor', ctaTextColor);
+    const ctaEl = document.querySelector('.cta');
+    if (ctaEl) ctaEl.classList.toggle('cta--light', ctaTextColor !== '#ffffff');
+
+    // SVG: diagonal energy shape
+    const energySvg = `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080"><defs><linearGradient id="d" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="${accentDeep}" stop-opacity="0"/><stop offset="0.55" stop-color="${accentDeep}" stop-opacity="0.85"/><stop offset="1" stop-color="${primary}" stop-opacity="0"/></linearGradient></defs><path d="M-160 980 C 260 820,510 1120,920 920 C 1130 820,1240 820,1320 760 L 1320 1180 L -160 1180 Z" fill="url(#d)"/><path d="M-220 1080 C 240 910,520 1220,980 1000 C 1180 900,1280 900,1400 840 L 1400 1280 L -220 1280 Z" fill="${primary}" fill-opacity="0.22"/></svg>`;
+
+    // SVG: motion streaks
+    const streakRows = Array.from({ length: 14 }, (_, i) => {
+      const y = 120 + i * 56, w = 520 + (i % 4) * 140, x = 60 + (i % 3) * 40;
+      return `<rect x="${x}" y="${y}" width="${w}" height="8" rx="6" fill="${accentGlow}" fill-opacity="${(0.10 + (i % 5) * 0.02).toFixed(2)}"/>`;
+    }).join('');
+    const streaksSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080"><g transform="rotate(-18 540 540)">${streakRows}</g></svg>`;
+
+    // SVG: premium sheen
+    const sheenSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200"><defs><linearGradient id="s" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${neutral}" stop-opacity="0"/><stop offset="0.42" stop-color="${neutral}" stop-opacity="0.10"/><stop offset="0.52" stop-color="${neutral}" stop-opacity="0.22"/><stop offset="0.70" stop-color="${neutral}" stop-opacity="0.06"/><stop offset="1" stop-color="${neutral}" stop-opacity="0"/></linearGradient></defs><g transform="rotate(-22 600 600)"><ellipse cx="920" cy="250" rx="760" ry="220" fill="url(#s)"/></g></svg>`;
+
+    const energy  = ensureLayer('manen-energy');
+    const streaks = ensureLayer('manen-streaks');
+    const sheen   = ensureLayer('manen-sheen');
+    if (energy)  { energy.style.backgroundImage  = `url("${svgUri(energySvg)}")`; energy.style.backgroundSize  = '1080px 1080px'; energy.style.backgroundRepeat = 'no-repeat'; energy.style.backgroundPosition = 'center'; }
+    if (streaks) { streaks.style.backgroundImage = `url("${svgUri(streaksSvg)}")`; streaks.style.backgroundSize = '1080px 1080px'; streaks.style.backgroundRepeat = 'no-repeat'; streaks.style.backgroundPosition = 'center'; }
+    if (sheen)   { sheen.style.backgroundImage   = `url("${svgUri(sheenSvg)}")`; sheen.style.backgroundSize   = '1200px 1200px'; sheen.style.backgroundRepeat  = 'no-repeat'; sheen.style.backgroundPosition = '65% 10%'; }
+  })();
+
+  // 15. Meta & ready flag
   window.__RENDER_META__ = {
     templateId: template.id,
     decisions,
