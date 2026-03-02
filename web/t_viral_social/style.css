@@ -57,6 +57,7 @@ body {
       transparent 70%
     );
   mix-blend-mode: normal;
+  opacity: 0.4;
 }
 
 .topbar {
