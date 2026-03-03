@@ -388,7 +388,133 @@
     setTimeout(apply, 120);
   })();
 
-  // 15. Meta & ready flag
+  // 15. Asset System v1 — overlay PNGs + badge/CTA SVG tinting
+  ;(function assetSystemV1() {
+    const PRESETS = {
+      promo_aggressive_v1: {
+        overlays: {
+          noise:  '/assets/overlays/noise_soft.png',
+          streak: '/assets/overlays/streaks_01.png',
+          glow:   '/assets/overlays/glow_center.png',
+          sparks: '/assets/decor/sparks_01.png'
+        },
+        vars: {
+          noiseOpacity:  0.08,
+          streakOpacity: 0.22,
+          glowOpacity:   0.28,
+          sparksOpacity: 0.18,
+          streakRotate:  '-10deg',
+          badgeRotate:   '-12deg'
+        }
+      },
+      clean_v1: {
+        overlays: { noise: '', streak: '', glow: '', sparks: '' },
+        vars: { noiseOpacity: 0, streakOpacity: 0, glowOpacity: 0, sparksOpacity: 0 }
+      }
+    };
+
+    function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
+    function hexToRgb(hex) {
+      if (!hex) return null;
+      let h = String(hex).trim();
+      if (h[0] === '#') h = h.slice(1);
+      if (h.length === 3) h = h.split('').map(c => c + c).join('');
+      if (h.length !== 6) return null;
+      const n = parseInt(h, 16);
+      return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+    }
+    function luminance(rgb) {
+      const s = [rgb.r, rgb.g, rgb.b].map(v => {
+        v /= 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * s[0] + 0.7152 * s[1] + 0.0722 * s[2];
+    }
+    function pickTextColor(bgHex) {
+      const rgb = hexToRgb(bgHex);
+      if (!rgb) return '#ffffff';
+      return luminance(rgb) > 0.53 ? '#111827' : '#ffffff';
+    }
+    function cv(name, fb) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fb;
+    }
+    function setVar(k, v) {
+      document.documentElement.style.setProperty(`--${k}`, String(v));
+    }
+    function setImg(id, src) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (!src) { el.removeAttribute('src'); return; }
+      el.src = src;
+    }
+    function inferBadgeText() {
+      const h = (document.querySelector('#headline')?.textContent || '').trim();
+      const s = (document.querySelector('#subtitle')?.textContent || '').trim();
+      const m = (h + ' ' + s).match(/(\d+\s*%)/);
+      return m ? m[1] + ' OFF' : 'SPECIAL';
+    }
+
+    function applyPreset(presetName) {
+      const preset = PRESETS[presetName] || PRESETS.clean_v1;
+
+      setImg('assetNoise',  preset.overlays.noise);
+      setImg('assetStreak', preset.overlays.streak);
+      setImg('assetGlow',   preset.overlays.glow);
+      setImg('assetSparks', preset.overlays.sparks);
+
+      Object.entries(preset.vars || {}).forEach(([k, v]) => setVar(k, v));
+
+      const accent = cv('--accent', '#ff0000');
+      setVar('ctaTextColor', pickTextColor(accent));
+      setVar('ctaColor', accent);
+      setVar('badgeColor', accent);
+      setVar('headlineEmphasisColor', accent);
+
+      // Badge SVG text
+      const badgeEl = document.getElementById('badgeAsset');
+      if (badgeEl) {
+        badgeEl.style.display = 'flex';
+        const l1 = document.getElementById('badgeLine1');
+        const l2 = document.getElementById('badgeLine2');
+        if (l1) l1.textContent = inferBadgeText();
+        if (l2) l2.textContent = 'TODAY';
+      }
+
+      // Sync CTA SVG bg width to actual CTA size
+      const ctaEl = document.querySelector('.cta');
+      const ctaBg = document.querySelector('.ctaAssetBg');
+      if (ctaEl && ctaBg) {
+        const r = ctaEl.getBoundingClientRect();
+        if (r.width > 0) {
+          ctaBg.style.width  = `${clamp(r.width, 520, 740)}px`;
+          ctaBg.style.height = `${r.height}px`;
+        }
+      }
+
+      // Headline word emphasis (.emph span, idempotent)
+      const hl = document.querySelector('#headline');
+      if (hl && !hl.querySelector('.emph')) {
+        const raw = (hl.textContent || '').trim();
+        const parts = raw.split(/\s+/).filter(Boolean);
+        if (parts.length >= 2) {
+          let idx = parts.findIndex(t => /%/.test(t) || /^\d+/.test(t));
+          if (idx === -1) idx = parts.length - 1;
+          parts[idx] = `<span class="emph">${parts[idx]}</span>`;
+          hl.innerHTML = parts.join(' ');
+        }
+      }
+    }
+
+    function boot() {
+      const presetName = (window.__MANEN_DATA?.preset) || 'promo_aggressive_v1';
+      applyPreset(presetName);
+    }
+
+    boot();
+    setTimeout(boot, 120);
+  })();
+
+  // 16. Meta & ready flag
   window.__RENDER_META__ = {
     templateId: template.id,
     decisions,

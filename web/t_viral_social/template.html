@@ -19,6 +19,45 @@
       <!-- Zone 1: Background -->
       <div class="bg"></div>
 
+      <!-- Zone 2b: Asset overlay system -->
+      <div class="assets" aria-hidden="true">
+        <img class="asset asset-noise"  id="assetNoise"  alt="" />
+        <img class="asset asset-streak" id="assetStreak" alt="" />
+        <img class="asset asset-glow"   id="assetGlow"   alt="" />
+        <img class="asset asset-sparks" id="assetSparks" alt="" />
+
+        <!-- Badge SVG asset (tintable via currentColor) -->
+        <div class="badge badge--asset" id="badgeAsset" style="display:none;">
+          <svg class="badgeSvg" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="92" fill="currentColor" opacity="0.92"/>
+            <path d="M40 70 C60 40, 120 35, 155 55 C125 60, 85 70, 60 90 C52 96, 44 90, 40 70Z"
+                  fill="#ffffff" opacity="0.20"/>
+            <circle cx="100" cy="100" r="70" fill="none" stroke="#ffffff" stroke-width="5" stroke-dasharray="8 8" opacity="0.30"/>
+            <text x="100" y="98" text-anchor="middle" dominant-baseline="middle"
+                  font-family="var(--fontPrimary, system-ui)" font-size="26" font-weight="900"
+                  fill="#ffffff" letter-spacing="2">
+              <tspan id="badgeLine1">50% OFF</tspan>
+            </text>
+            <text x="100" y="128" text-anchor="middle" dominant-baseline="middle"
+                  font-family="var(--fontPrimary, system-ui)" font-size="18" font-weight="800"
+                  fill="#ffffff" opacity="0.92" letter-spacing="2">
+              <tspan id="badgeLine2">TODAY</tspan>
+            </text>
+          </svg>
+        </div>
+
+        <!-- CTA SVG background (tintable via currentColor) -->
+        <div class="ctaAssetBg" aria-hidden="true">
+          <svg class="ctaSvg" viewBox="0 0 800 120" preserveAspectRatio="none">
+            <rect x="10" y="10" width="780" height="100" rx="60" fill="currentColor" opacity="0.95"/>
+            <path d="M70 26 H730 C760 26 780 40 785 58 C720 48 540 44 400 44 C260 44 110 52 20 70 C25 42 40 26 70 26Z"
+                  fill="#ffffff" opacity="0.18"/>
+            <rect x="14" y="14" width="772" height="92" rx="56" fill="none" stroke="#000000" opacity="0.12" stroke-width="6"/>
+            <rect x="18" y="18" width="764" height="84" rx="52" fill="none" stroke="#ffffff" opacity="0.18" stroke-width="4"/>
+          </svg>
+        </div>
+      </div>
+
       <!-- Zone 2: Hero image -->
       <div class="hero">
         <div class="heroContact"></div>
