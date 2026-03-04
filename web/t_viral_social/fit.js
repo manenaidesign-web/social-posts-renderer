@@ -99,6 +99,7 @@
   }
 
   function getLineHeightPx(el) {
+    if (!el) return 18;
     const cs = getComputedStyle(el);
     const lh = cs.lineHeight;
     if (lh === "normal") {
@@ -282,6 +283,7 @@
 
   // Legacy compat exports (in case runtime.js calls these)
   window.fitHeadlineWithFallback = function ({ headlineEl, tpl, fallbackVariant = 'C' }) {
+    if (!headlineEl) return { fit: true };
     const c = tpl?.constraints?.headline || DEFAULT_CONSTRAINTS.headline;
     const body = document.body;
     const original = body.dataset.variant || 'A';
@@ -292,6 +294,7 @@
     return fitTextBlock(headlineEl, c).ok;
   };
   window.fitSubtext = function ({ subtextEl, tpl }) {
+    if (!subtextEl) return { skipped: true };
     const c = tpl?.constraints?.subtext || DEFAULT_CONSTRAINTS.subtext;
     return fitTextBlock(subtextEl, c).ok;
   };
