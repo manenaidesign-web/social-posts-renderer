@@ -107,12 +107,34 @@ export class TemplateRenderer {
       }
     }
 
+    const backgroundImageUrl = data.backgroundImage || data.assets?.backgroundImage || null
+    let backgroundDataUrl = null
+    if (backgroundImageUrl) {
+      try {
+        backgroundDataUrl = await urlToDataUrl(backgroundImageUrl)
+      } catch (err) {
+        console.warn('[V2] background fetch failed:', err?.message || err)
+      }
+    }
+
+    const productImageUrl = data.productImage || data.assets?.productImage || null
+    let productDataUrl = null
+    if (productImageUrl) {
+      try {
+        productDataUrl = await urlToDataUrl(productImageUrl)
+      } catch (err) {
+        console.warn('[V2] product fetch failed:', err?.message || err)
+      }
+    }
+
     const assets = {
       heroDataUrl: heroDataUrl || null,
       heroImageUrl: heroImageUrlResolved,
       logoDataUrl: logoDataUrl || null,
       logoUrl: logoUrl || null,
-      decorDataUrl: data.decorDataUrl || data.assets?.decorDataUrl || null
+      decorDataUrl: data.decorDataUrl || data.assets?.decorDataUrl || null,
+      backgroundDataUrl: backgroundDataUrl || null,
+      productDataUrl: productDataUrl || null
     }
     
     let decisions = providedDecisions
@@ -138,7 +160,7 @@ export class TemplateRenderer {
     const web = tpl.web || {}
     const templateHtmlPath = join(__dirname, '..', (web.templateHtml || '').replace('./', ''))
     const styleCssPath = join(__dirname, '..', (web.styleCss || '').replace('./', ''))
-    const fitJsPath = join(__dirname, '..', (web.fitJs || '').replace('./', ''))
+    const fitJsPath = web.fitJs ? join(__dirname, '..', web.fitJs.replace('./', '')) : null
     const runtimeJsPath = join(__dirname, '..', (web.runtimeJs || '').replace('./', ''))
 
     console.log('[TemplateRenderer.renderV2] file paths', {
@@ -155,7 +177,7 @@ export class TemplateRenderer {
     const googleFontsImport = "@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&family=Assistant:wght@400;700&display=swap');\n"
     let styleCss = fs.readFileSync(styleCssPath, 'utf8')
     styleCss = googleFontsImport + styleCss
-    const fitJs = fs.readFileSync(fitJsPath, 'utf8')
+    const fitJs = fitJsPath ? fs.readFileSync(fitJsPath, 'utf8') : ''
     const runtimeJs = fs.readFileSync(runtimeJsPath, 'utf8')
 
     console.log('[TemplateRenderer.renderV2] file lengths', {
@@ -175,7 +197,9 @@ export class TemplateRenderer {
         heroImageUrl: !!assets.heroImageUrl,
         logoDataUrl: !!assets.logoDataUrl,
         logoUrl: !!assets.logoUrl,
-        decorDataUrl: !!assets.decorDataUrl
+        decorDataUrl: !!assets.decorDataUrl,
+        backgroundDataUrl: !!assets.backgroundDataUrl,
+        productDataUrl: !!assets.productDataUrl
       },
       requestMeta
     })

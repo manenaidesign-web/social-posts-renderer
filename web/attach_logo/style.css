@@ -1,0 +1,51 @@
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 1080px;
+  height: 1080px;
+  overflow: hidden;
+}
+
+.canvas {
+  position: relative;
+  width: 1080px;
+  height: 1080px;
+  overflow: hidden;
+  background: #000;
+}
+
+.bg-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.product-image {
+  position: absolute;
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70%;
+  max-height: 60%;
+  object-fit: contain;
+  filter: drop-shadow(0px 20px 30px rgba(0, 0, 0, 0.5));
+  z-index: 9;
+}
+
+.logo-image {
+  position: absolute;
+  top: 4%;
+  right: 4%;
+  width: 15%;
+  max-height: 8%;
+  object-fit: contain;
+  z-index: 10;
+}

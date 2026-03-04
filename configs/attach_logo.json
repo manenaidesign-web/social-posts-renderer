@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "2.0",
+  "id": "attach_logo",
+  "name": "Attach Logo",
+  "category": "product",
+  "canvas": { "width": 1080, "height": 1080, "safePadding": 0 },
+  "web": {
+    "templateHtml": "./web/attach_logo/template.html",
+    "styleCss": "./web/attach_logo/style.css",
+    "runtimeJs": "./web/attach_logo/runtime.js"
+  },
+  "defaults": {}
+}
