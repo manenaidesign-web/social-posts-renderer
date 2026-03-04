@@ -7,6 +7,7 @@
   "web": {
     "templateHtml": "./web/attach_logo/template.html",
     "styleCss": "./web/attach_logo/style.css",
+    "fitJs": "",
     "runtimeJs": "./web/attach_logo/runtime.js"
   },
   "defaults": {}

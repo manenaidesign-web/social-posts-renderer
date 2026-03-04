@@ -100,13 +100,13 @@ ${css || ''}
     const debugInfo = await page.evaluate(() => {
       const canvas = document.querySelector('.canvas')
       const bg = document.querySelector('.bg')
-      const computed = window.getComputedStyle(canvas)
-      const bgComputed = window.getComputedStyle(bg)
+      const computed = canvas ? window.getComputedStyle(canvas) : {}
+      const bgComputed = bg ? window.getComputedStyle(bg) : {}
       return {
         canvasWidth: canvas ? canvas.offsetWidth : 'NOT FOUND',
         canvasHeight: canvas ? canvas.offsetHeight : 'NOT FOUND',
-        canvasBg: computed.backgroundColor,
-        bgBackground: bgComputed.background,
+        canvasBg: computed.backgroundColor || null,
+        bgBackground: bgComputed.background || null,
         primaryVar: getComputedStyle(document.documentElement).getPropertyValue('--primary'),
         bgCssVar: getComputedStyle(document.documentElement).getPropertyValue('--bgCss'),
         bodyBg: getComputedStyle(document.body).backgroundColor,
