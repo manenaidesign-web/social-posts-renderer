@@ -257,23 +257,21 @@ app.post('/extract-colors', async (req, res) => {
 });
 
 const LOGO_ZONES = {
-  'top-right':    { x: 88, y: 6,  anchor: 'top-right'    },
-  'top-left':     { x: 12, y: 6,  anchor: 'top-left'     },
-  'bottom-right': { x: 88, y: 94, anchor: 'bottom-right' },
-  'bottom-left':  { x: 12, y: 94, anchor: 'bottom-left'  }
+  'bottom-left':  { left: 25,  bottom: 25, anchor: 'bottom-left'  },
+  'bottom-right': { right: 25, bottom: 25, anchor: 'bottom-right' }
 }
 
 // ── Shared helper: GPT-4o Vision → corner → fixed coordinates ────────────────
-const LOGO_CORNER_USER_PROMPT = `Look at this image. I need to place a brand logo in ONE of the 4 corners.
-Analyze each corner and pick the one that is:
-- Least busy / most empty
-- Does not cover the main subject
-- Does not overlap any text
-- Has the most negative space
+const LOGO_CORNER_USER_PROMPT = `Look at this image. I need to place a brand logo in either the bottom-left or bottom-right corner.
+
+Choose the corner that has:
+- The least amount of text
+- The least busy / most empty background
+- The most negative space
 
 Return ONLY valid JSON, no preamble, no backticks:
 {
-  "corner": "top-left" | "top-right" | "bottom-left" | "bottom-right"
+  "corner": "bottom-left" or "bottom-right"
 }`
 
 async function resolveLogoZone(imageUrl) {
@@ -311,21 +309,19 @@ async function resolveLogoZone(imageUrl) {
   if (!jsonMatch) throw new Error('No JSON in GPT response: ' + raw)
 
   const { corner } = JSON.parse(jsonMatch[0])
-  if (!LOGO_ZONES[corner]) throw new Error('Invalid corner from GPT: ' + corner)
-
-  const { x, y, anchor } = LOGO_ZONES[corner]
-  const zone = anchor
-  const logoPosition = { x, y, anchor }
-  console.log(`[resolveLogoZone] corner=${corner} → x=${x}, y=${y}, anchor=${anchor}`)
-  return { corner, x, y, anchor, zone, logoPosition }
+  const zone = LOGO_ZONES[corner] || LOGO_ZONES['bottom-right']
+  const { anchor } = zone
+  const logoPosition = { ...zone }
+  console.log(`[resolveLogoZone] corner=${corner} → logoPosition=`, logoPosition)
+  return { corner, anchor, zone: anchor, logoPosition }
 }
 
 app.post('/analyze-logo-position', async (req, res) => {
   try {
     const { imageUrl } = req.body
     if (!imageUrl) return res.status(400).json({ error: 'imageUrl required' })
-    const { corner, x, y, anchor, zone } = await resolveLogoZone(imageUrl)
-    res.json({ success: true, corner, x, y, anchor, zone })
+    const { corner, anchor, zone, logoPosition } = await resolveLogoZone(imageUrl)
+    res.json({ success: true, corner, anchor, zone, logoPosition })
   } catch (err) {
     console.error('/analyze-logo-position error:', err.message)
     res.status(500).json({ success: false, error: err.message })
