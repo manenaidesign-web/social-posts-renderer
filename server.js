@@ -263,39 +263,57 @@ const LOGO_ZONES = {
   'bottom-left':  { x: 12, y: 94, anchor: 'bottom-left'  }
 }
 
-// ── Shared helper: pixel analysis → best logo zone ───────────────────────────
+// ── Shared helper: GPT-4o Vision → best logo zone ────────────────────────────
+const LOGO_ZONE_PROMPT = `You are a professional graphic designer placing a brand logo on an advertisement image.
+
+Look at this image carefully and decide the single best position for a logo overlay.
+
+Think like a designer:
+- The logo should NOT cover the main subject (car, product, person)
+- The logo should NOT overlap any text
+- Prefer areas that feel "natural" for a logo — corners or edges with breathing room
+- Prefer lighter backgrounds where the logo will be visible
+- The logo placement should feel intentional and balanced, not random
+
+Return ONLY one of these exact strings:
+top-right / top-left / bottom-right / bottom-left`
+
 async function resolveLogoZone(imageUrl) {
   const imageRes = await fetch(imageUrl, { signal: AbortSignal.timeout(15000) })
   if (!imageRes.ok) throw new Error(`Image fetch failed: HTTP ${imageRes.status}`)
   const buf = Buffer.from(await imageRes.arrayBuffer())
+  const contentType = imageRes.headers.get('content-type') || 'image/jpeg'
+  const base64Image = buf.toString('base64')
 
-  const meta = await sharp(buf).metadata()
-  const { width, height } = meta
+  const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'text', text: LOGO_ZONE_PROMPT },
+          { type: 'image_url', image_url: { url: `data:${contentType};base64,${base64Image}` } }
+        ]
+      }],
+      max_tokens: 20
+    })
+  })
 
-  const PAD   = 50
-  const zoneW = Math.floor(width  * 0.2)
-  const zoneH = Math.floor(height * 0.2)
-
-  const zoneDefs = {
-    'top-left':     { left: PAD,                 top: PAD,                  width: zoneW, height: zoneH },
-    'top-right':    { left: width  - PAD - zoneW, top: PAD,                 width: zoneW, height: zoneH },
-    'bottom-left':  { left: PAD,                 top: height - PAD - zoneH, width: zoneW, height: zoneH },
-    'bottom-right': { left: width  - PAD - zoneW, top: height - PAD - zoneH, width: zoneW, height: zoneH }
+  if (!openaiRes.ok) {
+    const errText = await openaiRes.text()
+    throw new Error(`OpenAI API error: ${openaiRes.status} ${errText}`)
   }
 
-  let bestZone  = 'top-right'
-  let bestScore = Infinity
-
-  for (const [name, crop] of Object.entries(zoneDefs)) {
-    const stats = await sharp(buf).extract(crop).greyscale().stats()
-    const ch    = stats.channels[0]
-    const score = ch.stdev - ch.mean * 0.3
-    console.log(`[resolveLogoZone] ${name}: stdev=${ch.stdev.toFixed(1)}, brightness=${ch.mean.toFixed(1)}, score=${score.toFixed(1)}`)
-    if (score < bestScore) { bestScore = score; bestZone = name }
-  }
-
-  console.log(`[resolveLogoZone] best zone: ${bestZone} (score: ${bestScore.toFixed(1)})`)
-  return { zone: bestZone, logoPosition: LOGO_ZONES[bestZone] }
+  const openaiData = await openaiRes.json()
+  const raw  = (openaiData.choices?.[0]?.message?.content || '').trim().toLowerCase()
+  const zone = Object.keys(LOGO_ZONES).find(z => raw.includes(z)) || 'top-right'
+  console.log(`[resolveLogoZone] GPT returned: "${raw}" → zone: "${zone}"`)
+  return { zone, logoPosition: LOGO_ZONES[zone] }
 }
 
 app.post('/analyze-logo-position', async (req, res) => {
