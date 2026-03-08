@@ -2,13 +2,14 @@
   var p = window.__PAYLOAD__ || {};
   var assets = p.assets || {};
 
-  var bgImg      = document.getElementById('bgImg');
-  var productImg = document.getElementById('productImg');
-  var logoImg    = document.getElementById('logoImg');
+  var bgImg         = document.getElementById('bgImg');
+  var productImg    = document.getElementById('productImg');
+  var logoContainer = document.getElementById('logoContainer');
+  var logoImg       = document.getElementById('logoImg');
 
-  // Apply dynamic logo positioning if provided, otherwise keep CSS default (top-right)
+  // Apply dynamic logo positioning to the glassmorphism container
   var logoPos = assets.logoPosition;
-  if (logoPos && logoImg) {
+  if (logoPos && logoContainer) {
     var CANVAS = 1080;
     var left = (logoPos.x / 100) * CANVAS;
     var top  = (logoPos.y / 100) * CANVAS;
@@ -17,15 +18,13 @@
       'top-right':    'translate(-100%, 0)',
       'bottom-left':  'translate(0, -100%)',
       'bottom-right': 'translate(-100%, -100%)',
-      'top-center':   'translate(-50%, 0)',
-      'bottom-center':'translate(-50%, -100%)',
       'center':       'translate(-50%, -50%)'
     };
     var transform = anchorTransforms[logoPos.anchor] || 'translate(-100%, 0)';
-    logoImg.style.top       = top + 'px';
-    logoImg.style.left      = left + 'px';
-    logoImg.style.right     = 'auto';
-    logoImg.style.transform = transform;
+    logoContainer.style.top       = top + 'px';
+    logoContainer.style.left      = left + 'px';
+    logoContainer.style.right     = 'auto';
+    logoContainer.style.transform = transform;
     if (logoPos.size) {
       logoImg.style.width  = Math.round(logoPos.size / 100 * 1080) + 'px';
       logoImg.style.height = 'auto';
