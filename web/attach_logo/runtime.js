@@ -6,28 +6,14 @@
   var productImg = document.getElementById('productImg');
   var logoImg    = document.getElementById('logoImg');
 
-  // Apply dynamic logo positioning directly to the logo image
+  // Apply dynamic logo positioning using fixed pixel values from edges
   var logoPos = assets.logoPosition;
   if (logoPos && logoImg) {
-    var CANVAS = 1080;
-    var left = (logoPos.x / 100) * CANVAS;
-    var top  = (logoPos.y / 100) * CANVAS;
-    var anchorTransforms = {
-      'top-left':     'translate(0, 0)',
-      'top-right':    'translate(-100%, 0)',
-      'bottom-left':  'translate(0, -100%)',
-      'bottom-right': 'translate(-100%, -100%)',
-      'center':       'translate(-50%, -50%)'
-    };
-    var transform = anchorTransforms[logoPos.anchor] || 'translate(-100%, 0)';
-    logoImg.style.top       = top + 'px';
-    logoImg.style.left      = left + 'px';
-    logoImg.style.right     = 'auto';
-    logoImg.style.bottom    = 'auto';
-    logoImg.style.transform = transform;
-    if (logoPos.size) {
-      logoImg.style.width = Math.round(logoPos.size / 100 * 1080) + 'px';
-    }
+    logoImg.style.top       = logoPos.top    != null ? logoPos.top    + 'px' : 'auto';
+    logoImg.style.left      = logoPos.left   != null ? logoPos.left   + 'px' : 'auto';
+    logoImg.style.right     = logoPos.right  != null ? logoPos.right  + 'px' : 'auto';
+    logoImg.style.bottom    = logoPos.bottom != null ? logoPos.bottom + 'px' : 'auto';
+    logoImg.style.transform = 'none';
   }
 
   var pending   = 0;

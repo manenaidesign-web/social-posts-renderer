@@ -128,10 +128,10 @@ export class TemplateRenderer {
     }
 
     const LOGO_ZONES = {
-      'top-right':    { x: 94, y: 94, anchor: 'bottom-right' },
-      'top-left':     { x: 6,  y: 94, anchor: 'bottom-left'  },
-      'bottom-right': { x: 94, y: 94, anchor: 'bottom-right' },
-      'bottom-left':  { x: 6,  y: 94, anchor: 'bottom-left'  }
+      'bottom-right': { right: 40, bottom: 40 },
+      'bottom-left':  { left:  40, bottom: 40 },
+      'top-right':    { right: 40, bottom: 40 },
+      'top-left':     { left:  40, bottom: 40 }
     }
     const logoPosition = (data.logoZone && LOGO_ZONES[data.logoZone])
       ? LOGO_ZONES[data.logoZone]
