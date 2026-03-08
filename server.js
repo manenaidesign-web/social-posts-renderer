@@ -263,22 +263,17 @@ const LOGO_ZONES = {
   'bottom-left':  { x: 12, y: 94, anchor: 'bottom-left'  }
 }
 
-// ── Shared helper: GPT-4o Vision → exact logo position ───────────────────────
-const LOGO_POSITION_USER_PROMPT = `Analyze this image and determine the best position for placing a brand logo.
-
-Rules:
-- Do NOT cover the main subject (car, person, product)
-- Do NOT overlap any text in the image
-- Prefer corners or areas with negative space and light/neutral background
-- The logo should feel intentional and balanced
-- x and y are percentages (0-100) of image dimensions
+// ── Shared helper: GPT-4o Vision → corner → fixed coordinates ────────────────
+const LOGO_CORNER_USER_PROMPT = `Look at this image. I need to place a brand logo in ONE of the 4 corners.
+Analyze each corner and pick the one that is:
+- Least busy / most empty
+- Does not cover the main subject
+- Does not overlap any text
+- Has the most negative space
 
 Return ONLY valid JSON, no preamble, no backticks:
 {
-  "x": number (0-100),
-  "y": number (0-100),
-  "anchor": "top-left" or "top-right" or "bottom-left" or "bottom-right",
-  "size": number (percentage of image width, between 15-25)
+  "corner": "top-left" | "top-right" | "bottom-left" | "bottom-right"
 }`
 
 async function resolveLogoZone(imageUrl) {
@@ -295,12 +290,12 @@ async function resolveLogoZone(imageUrl) {
         {
           role: 'user',
           content: [
-            { type: 'text', text: LOGO_POSITION_USER_PROMPT },
+            { type: 'text', text: LOGO_CORNER_USER_PROMPT },
             { type: 'image_url', image_url: { url: imageUrl } }
           ]
         }
       ],
-      max_tokens: 100
+      max_tokens: 60
     })
   })
 
@@ -315,23 +310,22 @@ async function resolveLogoZone(imageUrl) {
   const jsonMatch = raw.match(/\{[\s\S]*\}/)
   if (!jsonMatch) throw new Error('No JSON in GPT response: ' + raw)
 
-  const { x, y, anchor, size } = JSON.parse(jsonMatch[0])
-  if (typeof x !== 'number' || typeof y !== 'number' || !anchor || typeof size !== 'number') {
-    throw new Error('Invalid logo position from GPT: ' + raw)
-  }
+  const { corner } = JSON.parse(jsonMatch[0])
+  if (!LOGO_ZONES[corner]) throw new Error('Invalid corner from GPT: ' + corner)
 
+  const { x, y, anchor } = LOGO_ZONES[corner]
   const zone = anchor
-  const logoPosition = { x, y, anchor, size }
-  console.log(`[resolveLogoZone] x=${x}, y=${y}, anchor=${anchor}, size=${size}`)
-  return { x, y, anchor, size, zone, logoPosition }
+  const logoPosition = { x, y, anchor }
+  console.log(`[resolveLogoZone] corner=${corner} → x=${x}, y=${y}, anchor=${anchor}`)
+  return { corner, x, y, anchor, zone, logoPosition }
 }
 
 app.post('/analyze-logo-position', async (req, res) => {
   try {
     const { imageUrl } = req.body
     if (!imageUrl) return res.status(400).json({ error: 'imageUrl required' })
-    const { x, y, anchor, size, zone } = await resolveLogoZone(imageUrl)
-    res.json({ success: true, x, y, anchor, size, zone })
+    const { corner, x, y, anchor, zone } = await resolveLogoZone(imageUrl)
+    res.json({ success: true, corner, x, y, anchor, zone })
   } catch (err) {
     console.error('/analyze-logo-position error:', err.message)
     res.status(500).json({ success: false, error: err.message })
