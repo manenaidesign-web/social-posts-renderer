@@ -130,12 +130,12 @@ export class TemplateRenderer {
     const LOGO_ZONES = {
       'bottom-right': { right: 40, bottom: 40 },
       'bottom-left':  { left:  40, bottom: 40 },
-      'top-right':    { right: 40, bottom: 40 },
-      'top-left':     { left:  40, bottom: 40 }
+      'top-right':    { right: 40, bottom: 40 },  // forced to bottom-right
+      'top-left':     { left:  40, bottom: 40 }   // forced to bottom-left
     }
-    const logoPosition = (data.logoZone && LOGO_ZONES[data.logoZone])
-      ? LOGO_ZONES[data.logoZone]
-      : (data.logoPosition || null)
+    // Resolve zone from logoZone, or from anchor inside logoPosition, defaulting to bottom-right
+    const rawZone = data.logoZone || data.logoPosition?.anchor || 'bottom-right'
+    const logoPosition = LOGO_ZONES[rawZone] || LOGO_ZONES['bottom-right']
 
     const assets = {
       heroDataUrl: heroDataUrl || null,
