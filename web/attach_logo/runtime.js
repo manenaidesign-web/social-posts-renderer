@@ -6,6 +6,26 @@
   var productImg = document.getElementById('productImg');
   var logoImg    = document.getElementById('logoImg');
 
+  // Apply dynamic logo positioning if provided, otherwise keep CSS default (top-right)
+  var logoPos = assets.logoPosition;
+  if (logoPos && logoImg) {
+    var CANVAS = 1080;
+    var left = (logoPos.x / 100) * CANVAS;
+    var top  = (logoPos.y / 100) * CANVAS;
+    var anchorTransforms = {
+      'top-left':     'translate(0, 0)',
+      'top-right':    'translate(-100%, 0)',
+      'bottom-left':  'translate(0, -100%)',
+      'bottom-right': 'translate(-100%, -100%)',
+      'center':       'translate(-50%, -50%)'
+    };
+    var transform = anchorTransforms[logoPos.anchor] || 'translate(-100%, 0)';
+    logoImg.style.top       = top + 'px';
+    logoImg.style.left      = left + 'px';
+    logoImg.style.right     = 'auto';
+    logoImg.style.transform = transform;
+  }
+
   var pending   = 0;
   var completed = 0;
 

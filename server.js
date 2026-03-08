@@ -256,6 +256,65 @@ app.post('/extract-colors', async (req, res) => {
   }
 });
 
+app.post('/analyze-logo-position', async (req, res) => {
+  try {
+    const { imageUrl } = req.body
+    if (!imageUrl) return res.status(400).json({ error: 'imageUrl required' })
+
+    const imageRes = await fetch(imageUrl, { signal: AbortSignal.timeout(10000) })
+    if (!imageRes.ok) throw new Error(`Image fetch failed: HTTP ${imageRes.status}`)
+    const buf = Buffer.from(await imageRes.arrayBuffer())
+    const contentType = imageRes.headers.get('content-type') || 'image/jpeg'
+    const base64Image = buf.toString('base64')
+
+    const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: 'Analyze this image and find the largest clean, empty, out-of-focus area suitable for a logo overlay. Consider balance and visual harmony. Return ONLY valid JSON: { "x": 85, "y": 12, "anchor": "top-right" } where x and y are percentages (0-100) and anchor is which corner of the logo to place at that point.'
+            },
+            {
+              type: 'image_url',
+              image_url: { url: `data:${contentType};base64,${base64Image}` }
+            }
+          ]
+        }],
+        max_tokens: 100
+      })
+    })
+
+    if (!openaiRes.ok) {
+      const errText = await openaiRes.text()
+      throw new Error(`OpenAI API error: ${openaiRes.status} ${errText}`)
+    }
+
+    const openaiData = await openaiRes.json()
+    const content = openaiData.choices?.[0]?.message?.content || ''
+
+    const jsonMatch = content.match(/\{[\s\S]*?\}/)
+    if (!jsonMatch) throw new Error('No JSON in GPT response: ' + content)
+
+    const logoPosition = JSON.parse(jsonMatch[0])
+    if (typeof logoPosition.x !== 'number' || typeof logoPosition.y !== 'number') {
+      throw new Error('Invalid logoPosition from GPT: ' + JSON.stringify(logoPosition))
+    }
+
+    res.json({ success: true, logoPosition })
+  } catch (err) {
+    console.error('/analyze-logo-position error:', err.message)
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
+
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`)
   console.log(`📝 Ready to render templates!`)

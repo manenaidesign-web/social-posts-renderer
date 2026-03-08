@@ -127,6 +127,8 @@ export class TemplateRenderer {
       }
     }
 
+    const logoPosition = data.logoPosition || null
+
     const assets = {
       heroDataUrl: heroDataUrl || null,
       heroImageUrl: heroImageUrlResolved,
@@ -134,7 +136,8 @@ export class TemplateRenderer {
       logoUrl: logoUrl || null,
       decorDataUrl: data.decorDataUrl || data.assets?.decorDataUrl || null,
       backgroundDataUrl: backgroundDataUrl || null,
-      productDataUrl: productDataUrl || null
+      productDataUrl: productDataUrl || null,
+      logoPosition: logoPosition
     }
     
     let decisions = providedDecisions
