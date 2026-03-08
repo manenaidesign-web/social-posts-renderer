@@ -2,14 +2,13 @@
   var p = window.__PAYLOAD__ || {};
   var assets = p.assets || {};
 
-  var bgImg         = document.getElementById('bgImg');
-  var productImg    = document.getElementById('productImg');
-  var logoContainer = document.getElementById('logoContainer');
-  var logoImg       = document.getElementById('logoImg');
+  var bgImg      = document.getElementById('bgImg');
+  var productImg = document.getElementById('productImg');
+  var logoImg    = document.getElementById('logoImg');
 
-  // Apply dynamic logo positioning to the glassmorphism container
+  // Apply dynamic logo positioning directly to the logo image
   var logoPos = assets.logoPosition;
-  if (logoPos && logoContainer) {
+  if (logoPos && logoImg) {
     var CANVAS = 1080;
     var left = (logoPos.x / 100) * CANVAS;
     var top  = (logoPos.y / 100) * CANVAS;
@@ -21,14 +20,13 @@
       'center':       'translate(-50%, -50%)'
     };
     var transform = anchorTransforms[logoPos.anchor] || 'translate(-100%, 0)';
-    logoContainer.style.top       = top + 'px';
-    logoContainer.style.left      = left + 'px';
-    logoContainer.style.right     = 'auto';
-    logoContainer.style.bottom    = 'auto';
-    logoContainer.style.transform = transform;
+    logoImg.style.top       = top + 'px';
+    logoImg.style.left      = left + 'px';
+    logoImg.style.right     = 'auto';
+    logoImg.style.bottom    = 'auto';
+    logoImg.style.transform = transform;
     if (logoPos.size) {
-      logoImg.style.width  = Math.round(logoPos.size / 100 * 1080) + 'px';
-      logoImg.style.height = 'auto';
+      logoImg.style.width = Math.round(logoPos.size / 100 * 1080) + 'px';
     }
   }
 
