@@ -263,28 +263,25 @@ const LOGO_ZONES = {
   'bottom-left':  { x: 12, y: 94, anchor: 'bottom-left'  }
 }
 
-// ── Shared helper: GPT-4o Vision → best logo zone ────────────────────────────
-const LOGO_ZONE_PROMPT = `You are a professional graphic designer placing a brand logo on an advertisement image.
+// ── Shared helper: GPT-4o Vision → exact logo position ───────────────────────
+const LOGO_POSITION_USER_PROMPT = `Analyze this image and determine the best position for placing a brand logo.
 
-Look at this image carefully and decide the single best position for a logo overlay.
+Rules:
+- Do NOT cover the main subject (car, person, product)
+- Do NOT overlap any text in the image
+- Prefer corners or areas with negative space and light/neutral background
+- The logo should feel intentional and balanced
+- x and y are percentages (0-100) of image dimensions
 
-Think like a designer:
-- The logo should NOT cover the main subject (car, product, person)
-- The logo should NOT overlap any text
-- Prefer areas that feel "natural" for a logo — corners or edges with breathing room
-- Prefer lighter backgrounds where the logo will be visible
-- The logo placement should feel intentional and balanced, not random
-
-Return ONLY one of these exact strings:
-top-right / top-left / bottom-right / bottom-left`
+Return ONLY valid JSON, no preamble, no backticks:
+{
+  "x": number (0-100),
+  "y": number (0-100),
+  "anchor": "top-left" or "top-right" or "bottom-left" or "bottom-right",
+  "size": number (percentage of image width, between 15-25)
+}`
 
 async function resolveLogoZone(imageUrl) {
-  const imageRes = await fetch(imageUrl, { signal: AbortSignal.timeout(15000) })
-  if (!imageRes.ok) throw new Error(`Image fetch failed: HTTP ${imageRes.status}`)
-  const buf = Buffer.from(await imageRes.arrayBuffer())
-  const contentType = imageRes.headers.get('content-type') || 'image/jpeg'
-  const base64Image = buf.toString('base64')
-
   const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -293,14 +290,17 @@ async function resolveLogoZone(imageUrl) {
     },
     body: JSON.stringify({
       model: 'gpt-4o',
-      messages: [{
-        role: 'user',
-        content: [
-          { type: 'text', text: LOGO_ZONE_PROMPT },
-          { type: 'image_url', image_url: { url: `data:${contentType};base64,${base64Image}` } }
-        ]
-      }],
-      max_tokens: 20
+      messages: [
+        { role: 'system', content: 'You are a professional advertising layout designer.' },
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: LOGO_POSITION_USER_PROMPT },
+            { type: 'image_url', image_url: { url: imageUrl } }
+          ]
+        }
+      ],
+      max_tokens: 100
     })
   })
 
@@ -310,18 +310,28 @@ async function resolveLogoZone(imageUrl) {
   }
 
   const openaiData = await openaiRes.json()
-  const raw  = (openaiData.choices?.[0]?.message?.content || '').trim().toLowerCase()
-  const zone = Object.keys(LOGO_ZONES).find(z => raw.includes(z)) || 'top-right'
-  console.log(`[resolveLogoZone] GPT returned: "${raw}" → zone: "${zone}"`)
-  return { zone, logoPosition: LOGO_ZONES[zone] }
+  const raw = (openaiData.choices?.[0]?.message?.content || '').trim()
+
+  const jsonMatch = raw.match(/\{[\s\S]*\}/)
+  if (!jsonMatch) throw new Error('No JSON in GPT response: ' + raw)
+
+  const { x, y, anchor, size } = JSON.parse(jsonMatch[0])
+  if (typeof x !== 'number' || typeof y !== 'number' || !anchor || typeof size !== 'number') {
+    throw new Error('Invalid logo position from GPT: ' + raw)
+  }
+
+  const zone = anchor
+  const logoPosition = { x, y, anchor, size }
+  console.log(`[resolveLogoZone] x=${x}, y=${y}, anchor=${anchor}, size=${size}`)
+  return { x, y, anchor, size, zone, logoPosition }
 }
 
 app.post('/analyze-logo-position', async (req, res) => {
   try {
     const { imageUrl } = req.body
     if (!imageUrl) return res.status(400).json({ error: 'imageUrl required' })
-    const { zone, logoPosition } = await resolveLogoZone(imageUrl)
-    res.json({ success: true, zone, logoPosition })
+    const { x, y, anchor, size, zone } = await resolveLogoZone(imageUrl)
+    res.json({ success: true, x, y, anchor, size, zone })
   } catch (err) {
     console.error('/analyze-logo-position error:', err.message)
     res.status(500).json({ success: false, error: err.message })
@@ -383,9 +393,9 @@ async function callIdeogram(visualPrompt, aspectRatio) {
   return imageUrl
 }
 
-async function renderAttachLogoVariant({ backgroundImage, logoUrl, logoZone }) {
+async function renderAttachLogoVariant({ backgroundImage, logoUrl, logoPosition }) {
   const renderer = new TemplateRenderer('attach_logo')
-  const result = await renderer.render({ backgroundImage, logoUrl, logoZone }, {})
+  const result = await renderer.render({ backgroundImage, logoUrl, logoPosition }, {})
   const imageBase64 = await renderToPNG(result.html, result.css)
   const filename = `attach_logo_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.png`
 
@@ -423,13 +433,13 @@ app.post('/generate-variants', async (req, res) => {
       const imageUrl = await callIdeogram(visual_prompt, aspect_ratio)
 
       // Step 4: Analyze logo position
-      const { zone } = await resolveLogoZone(imageUrl)
+      const { logoPosition } = await resolveLogoZone(imageUrl)
 
       // Step 5: Render attach_logo template
       const finalImageUrl = await renderAttachLogoVariant({
         backgroundImage: imageUrl,
         logoUrl: brandData.logoUrl,
-        logoZone: zone
+        logoPosition
       })
 
       console.log(`[generate-variants] variant ${variant.variantId} done → ${finalImageUrl}`)

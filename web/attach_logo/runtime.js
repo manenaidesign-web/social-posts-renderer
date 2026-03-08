@@ -26,6 +26,10 @@
     logoImg.style.left      = left + 'px';
     logoImg.style.right     = 'auto';
     logoImg.style.transform = transform;
+    if (logoPos.size) {
+      logoImg.style.width  = Math.round(logoPos.size / 100 * 1080) + 'px';
+      logoImg.style.height = 'auto';
+    }
   }
 
   var pending   = 0;
