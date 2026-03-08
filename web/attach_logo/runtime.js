@@ -5,15 +5,15 @@
   var bgImg      = document.getElementById('bgImg');
   var productImg = document.getElementById('productImg');
   var logoImg    = document.getElementById('logoImg');
+  var logoWrap   = document.getElementById('logoWrap');
 
-  // Apply dynamic logo positioning using fixed pixel values from edges
+  // Apply dynamic logo positioning to the wrapper using fixed pixel values from edges
   var logoPos = assets.logoPosition;
-  if (logoPos && logoImg) {
-    logoImg.style.top       = logoPos.top    != null ? logoPos.top    + 'px' : 'auto';
-    logoImg.style.left      = logoPos.left   != null ? logoPos.left   + 'px' : 'auto';
-    logoImg.style.right     = logoPos.right  != null ? logoPos.right  + 'px' : 'auto';
-    logoImg.style.bottom    = logoPos.bottom != null ? logoPos.bottom + 'px' : 'auto';
-    logoImg.style.transform = 'none';
+  if (logoPos && logoWrap) {
+    logoWrap.style.top    = logoPos.top    != null ? logoPos.top    + 'px' : 'auto';
+    logoWrap.style.left   = logoPos.left   != null ? logoPos.left   + 'px' : 'auto';
+    logoWrap.style.right  = logoPos.right  != null ? logoPos.right  + 'px' : 'auto';
+    logoWrap.style.bottom = logoPos.bottom != null ? logoPos.bottom + 'px' : 'auto';
   }
 
   var pending   = 0;
