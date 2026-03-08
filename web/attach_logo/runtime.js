@@ -24,6 +24,7 @@
     logoContainer.style.top       = top + 'px';
     logoContainer.style.left      = left + 'px';
     logoContainer.style.right     = 'auto';
+    logoContainer.style.bottom    = 'auto';
     logoContainer.style.transform = transform;
     if (logoPos.size) {
       logoImg.style.width  = Math.round(logoPos.size / 100 * 1080) + 'px';
