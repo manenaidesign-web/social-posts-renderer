@@ -286,7 +286,7 @@ async function resolveLogoZone(imageUrl) {
         content: [
           {
             type: 'text',
-            text: 'Look at this image and decide where a brand logo would look best visually. Consider balance, empty space, and design harmony. Return ONLY one of these exact strings:\ntop-right / top-left / bottom-right / bottom-left / top-center / bottom-center'
+            text: 'Look at this image and decide where a brand logo would look best visually.\nFollow these rules strictly:\n1. Must NOT overlap any text in the image\n2. Must be placed on a LIGHT, bright, or neutral background — avoid dark or busy areas\n3. Must avoid the main subject of the image\n4. Consider overall visual balance and harmony\n\nReturn ONLY one of these exact strings, nothing else:\ntop-right / top-left / bottom-right / bottom-left / top-center / bottom-center'
           },
           {
             type: 'image_url',
