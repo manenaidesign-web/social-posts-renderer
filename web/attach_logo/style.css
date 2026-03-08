@@ -44,12 +44,6 @@ html, body {
   position: absolute;
   bottom: 25px;
   right: 25px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.45);
-  border-radius: 50%;
-  padding: 12px;
   z-index: 10;
 }
 
