@@ -257,57 +257,45 @@ app.post('/extract-colors', async (req, res) => {
 });
 
 const LOGO_ZONES = {
-  'top-right':     { x: 92, y: 6,  anchor: 'top-right'     },
-  'top-left':      { x: 8,  y: 6,  anchor: 'top-left'      },
-  'bottom-right':  { x: 92, y: 94, anchor: 'bottom-right'  },
-  'bottom-left':   { x: 8,  y: 94, anchor: 'bottom-left'   },
-  'top-center':    { x: 50, y: 6,  anchor: 'top-center'    },
-  'bottom-center': { x: 50, y: 94, anchor: 'bottom-center' }
+  'top-right':    { x: 88, y: 6,  anchor: 'top-right'    },
+  'top-left':     { x: 12, y: 6,  anchor: 'top-left'     },
+  'bottom-right': { x: 88, y: 94, anchor: 'bottom-right' },
+  'bottom-left':  { x: 12, y: 94, anchor: 'bottom-left'  }
 }
 
-// ── Shared helper: fetch image → ask GPT-4o for logo zone ────────────────────
+// ── Shared helper: pixel analysis → best logo zone ───────────────────────────
 async function resolveLogoZone(imageUrl) {
   const imageRes = await fetch(imageUrl, { signal: AbortSignal.timeout(15000) })
   if (!imageRes.ok) throw new Error(`Image fetch failed: HTTP ${imageRes.status}`)
   const buf = Buffer.from(await imageRes.arrayBuffer())
-  const contentType = imageRes.headers.get('content-type') || 'image/jpeg'
-  const base64Image = buf.toString('base64')
 
-  const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages: [{
-        role: 'user',
-        content: [
-          {
-            type: 'text',
-            text: 'Look at this image and decide where a brand logo would look best visually.\nFollow these rules strictly:\n1. Must NOT overlap any text in the image\n2. Must be placed on a LIGHT, bright, or neutral background — avoid dark or busy areas\n3. Must avoid the main subject of the image\n4. Consider overall visual balance and harmony\n\nReturn ONLY one of these exact strings, nothing else:\ntop-right / top-left / bottom-right / bottom-left / top-center / bottom-center'
-          },
-          {
-            type: 'image_url',
-            image_url: { url: `data:${contentType};base64,${base64Image}` }
-          }
-        ]
-      }],
-      max_tokens: 20
-    })
-  })
+  const meta = await sharp(buf).metadata()
+  const { width, height } = meta
 
-  if (!openaiRes.ok) {
-    const errText = await openaiRes.text()
-    throw new Error(`OpenAI API error: ${openaiRes.status} ${errText}`)
+  const PAD   = 50
+  const zoneW = Math.floor(width  * 0.2)
+  const zoneH = Math.floor(height * 0.2)
+
+  const zoneDefs = {
+    'top-left':     { left: PAD,                 top: PAD,                  width: zoneW, height: zoneH },
+    'top-right':    { left: width  - PAD - zoneW, top: PAD,                 width: zoneW, height: zoneH },
+    'bottom-left':  { left: PAD,                 top: height - PAD - zoneH, width: zoneW, height: zoneH },
+    'bottom-right': { left: width  - PAD - zoneW, top: height - PAD - zoneH, width: zoneW, height: zoneH }
   }
 
-  const openaiData = await openaiRes.json()
-  const raw = (openaiData.choices?.[0]?.message?.content || '').trim().toLowerCase()
-  const zone = Object.keys(LOGO_ZONES).find(z => raw.includes(z)) || 'top-right'
-  console.log(`[resolveLogoZone] GPT returned: "${raw}" → zone: "${zone}"`)
-  return { zone, logoPosition: LOGO_ZONES[zone] }
+  let bestZone  = 'top-right'
+  let bestScore = Infinity
+
+  for (const [name, crop] of Object.entries(zoneDefs)) {
+    const stats = await sharp(buf).extract(crop).greyscale().stats()
+    const ch    = stats.channels[0]
+    const score = ch.stdev - ch.mean * 0.3
+    console.log(`[resolveLogoZone] ${name}: stdev=${ch.stdev.toFixed(1)}, brightness=${ch.mean.toFixed(1)}, score=${score.toFixed(1)}`)
+    if (score < bestScore) { bestScore = score; bestZone = name }
+  }
+
+  console.log(`[resolveLogoZone] best zone: ${bestZone} (score: ${bestScore.toFixed(1)})`)
+  return { zone: bestZone, logoPosition: LOGO_ZONES[bestZone] }
 }
 
 app.post('/analyze-logo-position', async (req, res) => {
