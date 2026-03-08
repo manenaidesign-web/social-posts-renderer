@@ -256,6 +256,15 @@ app.post('/extract-colors', async (req, res) => {
   }
 });
 
+const LOGO_ZONES = {
+  'top-right':     { x: 92, y: 6,  anchor: 'top-right'     },
+  'top-left':      { x: 8,  y: 6,  anchor: 'top-left'      },
+  'bottom-right':  { x: 92, y: 94, anchor: 'bottom-right'  },
+  'bottom-left':   { x: 8,  y: 94, anchor: 'bottom-left'   },
+  'top-center':    { x: 50, y: 6,  anchor: 'top-center'    },
+  'bottom-center': { x: 50, y: 94, anchor: 'bottom-center' }
+}
+
 app.post('/analyze-logo-position', async (req, res) => {
   try {
     const { imageUrl } = req.body
@@ -280,7 +289,7 @@ app.post('/analyze-logo-position', async (req, res) => {
           content: [
             {
               type: 'text',
-              text: 'Analyze this image and find the largest clean, empty, out-of-focus area suitable for a logo overlay. Consider balance and visual harmony. Return ONLY valid JSON: { "x": 85, "y": 12, "anchor": "top-right" } where x and y are percentages (0-100) and anchor is which corner of the logo to place at that point.'
+              text: 'Look at this image and decide where a brand logo would look best visually. Consider balance, empty space, and design harmony. Return ONLY one of these exact strings:\ntop-right / top-left / bottom-right / bottom-left / top-center / bottom-center'
             },
             {
               type: 'image_url',
@@ -288,7 +297,7 @@ app.post('/analyze-logo-position', async (req, res) => {
             }
           ]
         }],
-        max_tokens: 100
+        max_tokens: 20
       })
     })
 
@@ -298,17 +307,14 @@ app.post('/analyze-logo-position', async (req, res) => {
     }
 
     const openaiData = await openaiRes.json()
-    const content = openaiData.choices?.[0]?.message?.content || ''
+    const raw = (openaiData.choices?.[0]?.message?.content || '').trim().toLowerCase()
 
-    const jsonMatch = content.match(/\{[\s\S]*?\}/)
-    if (!jsonMatch) throw new Error('No JSON in GPT response: ' + content)
+    const VALID_ZONES = Object.keys(LOGO_ZONES)
+    const zone = VALID_ZONES.find(z => raw.includes(z)) || 'top-right'
+    const logoPosition = LOGO_ZONES[zone]
 
-    const logoPosition = JSON.parse(jsonMatch[0])
-    if (typeof logoPosition.x !== 'number' || typeof logoPosition.y !== 'number') {
-      throw new Error('Invalid logoPosition from GPT: ' + JSON.stringify(logoPosition))
-    }
-
-    res.json({ success: true, logoPosition })
+    console.log(`[analyze-logo-position] GPT returned: "${raw}" → zone: "${zone}"`)
+    res.json({ success: true, zone, logoPosition })
   } catch (err) {
     console.error('/analyze-logo-position error:', err.message)
     res.status(500).json({ success: false, error: err.message })

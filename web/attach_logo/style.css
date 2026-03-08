@@ -44,8 +44,8 @@ html, body {
   position: absolute;
   top: 4%;
   right: 4%;
-  width: 22%;
-  max-height: 12%;
+  width: 180px;
+  max-height: none;
   object-fit: contain;
   z-index: 10;
 }

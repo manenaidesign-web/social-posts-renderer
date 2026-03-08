@@ -17,6 +17,8 @@
       'top-right':    'translate(-100%, 0)',
       'bottom-left':  'translate(0, -100%)',
       'bottom-right': 'translate(-100%, -100%)',
+      'top-center':   'translate(-50%, 0)',
+      'bottom-center':'translate(-50%, -100%)',
       'center':       'translate(-50%, -50%)'
     };
     var transform = anchorTransforms[logoPos.anchor] || 'translate(-100%, 0)';
