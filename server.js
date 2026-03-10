@@ -8,6 +8,7 @@ import { uploadToS3 } from './utils/upload.js'
 import { chromium } from 'playwright'
 import dotenv from 'dotenv'
 import fs from 'fs'
+import FormData from 'form-data'
 
 dotenv.config()
 
@@ -445,6 +446,45 @@ app.post('/generate-variants', async (req, res) => {
     res.json({ success: true, variants: results })
   } catch (err) {
     console.error('/generate-variants error:', err.message)
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
+
+app.post('/remix-image', async (req, res) => {
+  try {
+    const { imageUrl, editPrompt, aspectRatio } = req.body
+    if (!imageUrl)    return res.status(400).json({ success: false, error: 'imageUrl required' })
+    if (!editPrompt)  return res.status(400).json({ success: false, error: 'editPrompt required' })
+
+    const imageResponse = await fetch(imageUrl)
+    if (!imageResponse.ok) throw new Error(`Failed to fetch image: ${imageResponse.status}`)
+    const imageBuffer = Buffer.from(await imageResponse.arrayBuffer())
+
+    const form = new FormData()
+    form.append('image', imageBuffer, { filename: 'image.png', contentType: 'image/png' })
+    form.append('prompt', editPrompt)
+    form.append('aspect_ratio', aspectRatio || 'ASPECT_1_1')
+    form.append('rendering_speed', 'TURBO')
+    form.append('magic_prompt_option', 'OFF')
+
+    const ideogramRes = await fetch('https://api.ideogram.ai/v1/ideogram-v3/remix', {
+      method: 'POST',
+      headers: { 'Api-Key': process.env.IDEOGRAM_API_KEY, ...form.getHeaders() },
+      body: form
+    })
+
+    if (!ideogramRes.ok) {
+      const errText = await ideogramRes.text()
+      throw new Error(`Ideogram API error: ${ideogramRes.status} ${errText}`)
+    }
+
+    const data = await ideogramRes.json()
+    const resultUrl = data.data?.[0]?.url
+    if (!resultUrl) throw new Error('No image URL in Ideogram response')
+
+    res.json({ success: true, imageUrl: resultUrl })
+  } catch (err) {
+    console.error('/remix-image error:', err.message)
     res.status(500).json({ success: false, error: err.message })
   }
 })
