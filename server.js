@@ -460,6 +460,11 @@ app.post('/remix-image', async (req, res) => {
     if (!imageResponse.ok) throw new Error(`Failed to fetch image: ${imageResponse.status}`)
     const imageBuffer = Buffer.from(await imageResponse.arrayBuffer())
 
+    console.log('Image buffer size:', imageBuffer.length)
+    console.log('Image buffer type:', typeof imageBuffer)
+    console.log('editPrompt:', editPrompt)
+    console.log('aspectRatio:', aspectRatio)
+
     const form = new FormData()
     form.append('image', imageBuffer, { filename: 'image.png', contentType: 'image/png' })
     form.append('prompt', editPrompt)
@@ -473,14 +478,16 @@ app.post('/remix-image', async (req, res) => {
       body: form
     })
 
+    const responseData = await ideogramRes.json()
+    console.log('Ideogram status:', ideogramRes.status)
+    console.log('Ideogram response:', JSON.stringify(responseData))
+
     if (!ideogramRes.ok) {
-      const errText = await ideogramRes.text()
-      throw new Error(`Ideogram API error: ${ideogramRes.status} ${errText}`)
+      throw new Error(`Ideogram API error: ${ideogramRes.status} ${JSON.stringify(responseData)}`)
     }
 
-    const data = await ideogramRes.json()
-    const resultUrl = data.data?.[0]?.url
-    if (!resultUrl) throw new Error('No image URL in Ideogram response')
+    const resultUrl = responseData.data?.[0]?.url
+    if (!resultUrl) throw new Error('No image URL in Ideogram response: ' + JSON.stringify(responseData))
 
     res.json({ success: true, imageUrl: resultUrl })
   } catch (err) {
