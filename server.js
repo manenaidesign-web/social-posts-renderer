@@ -465,7 +465,7 @@ app.post('/remix-image', async (req, res) => {
     form.append('prompt', editPrompt)
     form.append('aspect_ratio', aspectRatio || 'ASPECT_1_1')
     form.append('rendering_speed', 'TURBO')
-    form.append('magic_prompt_option', 'OFF')
+    form.append('magic_prompt', 'OFF')
 
     const ideogramRes = await fetch('https://api.ideogram.ai/v1/ideogram-v3/remix', {
       method: 'POST',
