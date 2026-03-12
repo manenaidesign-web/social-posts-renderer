@@ -14,6 +14,9 @@
     logoWrap.style.left   = logoPos.left   != null ? logoPos.left   + 'px' : 'auto';
     logoWrap.style.right  = logoPos.right  != null ? logoPos.right  + 'px' : 'auto';
     logoWrap.style.bottom = logoPos.bottom != null ? logoPos.bottom + 'px' : 'auto';
+    if (logoPos.transform) {
+      logoWrap.style.transform = logoPos.transform;
+    }
   }
 
   var pending   = 0;

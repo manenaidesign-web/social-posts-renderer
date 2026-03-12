@@ -128,10 +128,11 @@ export class TemplateRenderer {
     }
 
     const LOGO_ZONES = {
-      'bottom-right': { right: 40, bottom: 40 },
-      'bottom-left':  { left:  40, bottom: 40 },
-      'top-right':    { right: 40, bottom: 40 },  // forced to bottom-right
-      'top-left':     { left:  40, bottom: 40 }   // forced to bottom-left
+      'bottom-right':  { right: 40, bottom: 40 },
+      'bottom-left':   { left: 40,  bottom: 40 },
+      'bottom-center': { left: '540px', bottom: 40, transform: 'translateX(-50%)' },
+      'top-right':     { right: 40, bottom: 40 },
+      'top-left':      { left: 40,  bottom: 40 }
     }
     // Resolve zone from logoZone, or from anchor inside logoPosition, defaulting to bottom-right
     const rawZone = data.logoZone || data.logoPosition?.anchor || 'bottom-right'
