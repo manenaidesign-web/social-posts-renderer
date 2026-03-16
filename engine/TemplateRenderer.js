@@ -135,7 +135,7 @@ export class TemplateRenderer {
       'top-left':      { left: 40,  bottom: 40 }
     }
     // Resolve zone from logoZone, or from anchor inside logoPosition, defaulting to bottom-right
-    const rawZone = data.logoZone || data.logoPosition?.anchor || 'bottom-right'
+    const rawZone = 'bottom-center'
     const logoPosition = LOGO_ZONES[rawZone] || LOGO_ZONES['bottom-right']
 
     const assets = {
