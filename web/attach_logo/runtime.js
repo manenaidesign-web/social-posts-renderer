@@ -19,11 +19,6 @@
     }
   }
 
-  var primaryColor = (p.tokens && p.tokens.primary) ? p.tokens.primary : '#9d845d';
-  if (logoWrap) {
-    logoWrap.style.borderColor = primaryColor;
-  }
-
   var pending   = 0;
   var completed = 0;
 
