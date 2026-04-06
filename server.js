@@ -512,7 +512,7 @@ app.post('/add-watermark', async (req, res) => {
 
     // Resize logo to 18% of image width, keep aspect ratio
     const logoWidth = Math.round(width * 0.18)
-    const logoBuffer = await sharp('./logo.png')
+    const logoBuffer = await sharp('./logo.PNG')
       .resize(logoWidth, null, { fit: 'inside' })
       .png()
       .toBuffer()
