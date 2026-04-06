@@ -496,6 +496,55 @@ app.post('/remix-image', async (req, res) => {
   }
 })
 
+app.post('/add-watermark', async (req, res) => {
+  try {
+    const { imageUrl } = req.body
+    if (!imageUrl) return res.status(400).json({ error: 'imageUrl required' })
+
+    // Fetch the original image
+    const response = await fetch(imageUrl)
+    if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`)
+    const imageBuffer = Buffer.from(await response.arrayBuffer())
+
+    // Get original image dimensions
+    const metadata = await sharp(imageBuffer).metadata()
+    const { width, height } = metadata
+
+    // Resize logo to 18% of image width, keep aspect ratio
+    const logoWidth = Math.round(width * 0.18)
+    const logoBuffer = await sharp('./logo.png')
+      .resize(logoWidth, null, { fit: 'inside' })
+      .png()
+      .toBuffer()
+
+    const logoMeta = await sharp(logoBuffer).metadata()
+    const logoHeight = logoMeta.height
+
+    const margin = Math.round(width * 0.03)
+
+    // Composite logo onto bottom-right corner
+    const watermarked = await sharp(imageBuffer)
+      .composite([{
+        input: logoBuffer,
+        gravity: 'southeast',
+        top: height - logoHeight - margin,
+        left: width - logoWidth - margin
+      }])
+      .png()
+      .toBuffer()
+
+    // Upload to S3
+    const filename = `watermarked_${Date.now()}.png`
+    const s3Url = await uploadToS3(watermarked, filename)
+
+    res.json({ success: true, imageUrl: s3Url })
+
+  } catch (err) {
+    console.error('/add-watermark error:', err.message)
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
+
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`)
   console.log(`📝 Ready to render templates!`)
