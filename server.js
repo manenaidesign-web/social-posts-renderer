@@ -184,7 +184,7 @@ app.post('/header-color', async (req, res) => {
     await browser.close();
 
     const filename = `header_${Date.now()}.png`;
-    const imageUrl = await uploadToS3(screenshot.toString('base64'), filename);
+    const imageUrl = await uploadToS3(screenshot, filename);
 
     res.json({ success: true, headerImageUrl: imageUrl });
 
