@@ -496,6 +496,25 @@ app.post('/remix-image', async (req, res) => {
   }
 })
 
+app.post('/save-image', async (req, res) => {
+  try {
+    const { imageUrl } = req.body
+    if (!imageUrl) return res.status(400).json({ error: 'imageUrl required' })
+
+    const response = await fetch(imageUrl)
+    if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`)
+    const imageBuffer = Buffer.from(await response.arrayBuffer())
+
+    const filename = `saved_${Date.now()}.png`
+    const s3Url = await uploadToS3(imageBuffer, filename)
+
+    res.json({ success: true, imageUrl: s3Url })
+  } catch (err) {
+    console.error('/save-image error:', err.message)
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
+
 app.post('/add-watermark', async (req, res) => {
   try {
     const { imageUrl } = req.body
